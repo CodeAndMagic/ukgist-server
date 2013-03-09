@@ -9,3 +9,6 @@ target
 *.iml
 .idea
 
+.DS_Store
+
+src/main/resources/props/production.default.props
