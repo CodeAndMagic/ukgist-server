@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.1">
+    <Document>
+
+        <Placemark>
+            <Style>
+                <LineStyle>
+                    <width>0</width>
+                </LineStyle>
+                <PolyStyle>
+                    <color>ccf1d693</color>
+                </PolyStyle>
+            </Style>
+
+        </Placemark>
+
+    </Document>
+</kml>

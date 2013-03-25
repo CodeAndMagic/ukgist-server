@@ -12,7 +12,10 @@ object KmlAreaExtractor extends RowExtractor[KmlArea]{
   def extract(row: Row) = new KmlArea(
     row.bigInt("id").get,
     row.string("name").get,
-    row.binaryStream("kml").map(Kml.unmarshal(_))
+    row.binaryStream("kml").flatMap(Kml.unmarshal(_) match {
+      case kml:Kml if KmlArea.validKml(kml) => Some(kml)
+      case _ => None
+    })
   )
 
   object WithoutKml extends RowExtractor[KmlArea]{

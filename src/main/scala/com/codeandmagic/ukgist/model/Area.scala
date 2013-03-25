@@ -120,5 +120,19 @@ object KmlArea extends KmlAreaDao with GeometryUtils{
     _.selectOne(KmlAreaSchemaTokens.getById, "id"->id)
   )
 
+  /** Only KMLs with ONE polygon geometry are valid */
+  def validKml(kml:Kml):Boolean = kml.getFeature match {
+    case document:Document => document.getFeature.headOption match {
+      case Some(f1) => f1 match {
+        case placemark:Placemark => placemark.getGeometry match {
+          case poly:KmlPolygon => true
+          case _ => false
+        }
+        case _ => false
+      }
+      case _ => false
+    }
+    case _ => false
+  }
 
 }
