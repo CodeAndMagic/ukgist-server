@@ -3,7 +3,7 @@ package com.codeandmagic.ukgist.model
 import net.liftweb.util.Helpers._
 
 /**
- * User: cvrabie1
+ * User: cvrabie
  * Date: 23/03/2013
  */
 object Dbl{

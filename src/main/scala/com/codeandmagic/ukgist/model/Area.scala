@@ -8,7 +8,7 @@ import scala.collection.JavaConversions.asScalaBuffer
 import scala.math.{min,max}
 
 /**
- * User: cvrabie1
+ * User: cvrabie
  * Date: 23/03/2013
  */
 trait Area {
@@ -80,7 +80,7 @@ trait GeometryUtils{
   val geometryFactory = new GeometryFactory(coordinateFactory)
 
   def kmlLinearRingToJtsLinearRing(ring: KmlLinearRing):LinearRing = new LinearRing(
-    coordinateFactory.create(ring.getCoordinates.map(c => new Coordinate(c.getLatitude, c.getLatitude)).toArray),
+    coordinateFactory.create(ring.getCoordinates.map(c => new Coordinate(c.getLatitude, c.getLongitude)).toArray),
     geometryFactory
   )
 

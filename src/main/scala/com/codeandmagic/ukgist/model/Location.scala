@@ -4,12 +4,13 @@ import com.javadocmd.simplelatlng.LatLng
 import net.liftweb.util.Helpers.tryo
 
 /**
- * User: cvrabie1
+ * User: cvrabie
  * Date: 11/03/2013
  */
 
 class Location(val latlng:LatLng){
   def this(lat:Double, lng:Double) = this(new LatLng(lat,lng))
+  override def toString = "(%f,%f)".format(latlng.getLatitude,latlng.getLongitude)
 }
 
 object Location {

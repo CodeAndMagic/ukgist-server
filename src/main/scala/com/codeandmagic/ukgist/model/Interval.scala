@@ -4,7 +4,7 @@ import org.joda.time.format.DateTimeFormat
 import net.liftweb.util.Helpers.tryo
 
 /**
- * User: cvrabie1
+ * User: cvrabie
  * Date: 23/03/2013
  */
 

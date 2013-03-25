@@ -5,7 +5,7 @@ import com.codeandmagic.ukgist.model.{KmlArea}
 import de.micromata.opengis.kml.v_2_2_0.Kml
 
 /**
- * User: cvrabie1
+ * User: cvrabie
  * Date: 23/03/2013
  */
 object KmlAreaExtractor extends RowExtractor[KmlArea]{

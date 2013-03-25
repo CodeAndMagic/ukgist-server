@@ -4,7 +4,7 @@ import java.io.{Writer, PrintWriter}
 import net.liftweb.common.{Logger, Loggable}
 
 /**
- * User: cvrabie1
+ * User: cvrabie
  * Date: 03/08/2012
  */
 

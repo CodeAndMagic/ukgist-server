@@ -9,7 +9,7 @@ import net.liftweb.util.Helpers._
 import com.codeandmagic.ukgist.util.{LogLevel, LogPrintWriter}
 
 /**
- * User: cvrabie1
+ * User: cvrabie
  * Date: 02/08/2012
  */
 private[schema] object ORBrokerFactory{

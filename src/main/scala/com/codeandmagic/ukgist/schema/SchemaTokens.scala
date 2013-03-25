@@ -4,7 +4,7 @@ import org.orbroker.config.TokenSet
 import org.orbroker.Token
 
 /**
- * User: cvrabie1
+ * User: cvrabie
  * Date: 23/03/2013
  */
 
