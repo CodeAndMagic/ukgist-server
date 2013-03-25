@@ -2,7 +2,7 @@ package bootstrap.liftweb
 
 import net.liftweb.http._
 import _root_.net.liftweb.http.provider._
-import org.codeandmagic.ukgist.UKGistRest
+import com.codeandmagic.ukgist.UKGistRest
 
 /**
  * A class that's instantiated early and run.  It allows the application
@@ -10,7 +10,7 @@ import org.codeandmagic.ukgist.UKGistRest
  */
 class Boot {
   def boot {
-    //LiftRules.addToPackages("org.codeandmagic.ukgist")
+    //LiftRules.addToPackages("com.codeandmagic.ukgist")
 
     /* Things that completely bypass LiftFilter */
     /*LiftRules.liftRequest.prepend({
