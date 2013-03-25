@@ -1,7 +1,7 @@
 package com.codeandmagic.ukgist.schema
 
 import org.orbroker.{Row, RowExtractor}
-import com.codeandmagic.ukgist.model.{KmlArea, Area}
+import com.codeandmagic.ukgist.model.{KmlArea}
 import de.micromata.opengis.kml.v_2_2_0.Kml
 
 /**

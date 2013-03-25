@@ -1,6 +1,6 @@
 package com.codeandmagic.ukgist.model
 
-import de.micromata.opengis.kml.v_2_2_0.{Polygon => KmlPolygon, LinearRing => KmlLinearRing, Coordinate => KmlCoordinate, Placemark, Kml}
+import de.micromata.opengis.kml.v_2_2_0.{Polygon => KmlPolygon, LinearRing => KmlLinearRing, Coordinate => KmlCoordinate, Document, Placemark, Kml}
 import com.codeandmagic.ukgist.schema._
 import scala.collection.JavaConversions.asScalaBuffer
 
@@ -91,9 +91,12 @@ trait GeometryUtils{
   )
 
   private def ifPolygon[T](kml: Kml)(f:(KmlPolygon)=>T):Option[T] = kml.getFeature match {
-    case placemark:Placemark => placemark.getGeometry match {
-      case poly:KmlPolygon => Some(f(poly))
-      case _ => None
+    /* TODO: this only accepts a very specific KML: must have a Document base feature with only one Placemark child */
+    case document:Document => document.getFeature.get(0) match {
+      case placemark:Placemark => placemark.getGeometry match {
+        case poly:KmlPolygon => Some(f(poly))
+        case _ => None
+      }
     }
     case _ =>None
   }
