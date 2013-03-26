@@ -8,9 +8,9 @@ import net.liftweb.util.Helpers.tryo
  * Date: 11/03/2013
  */
 
-class Location(val latlng:LatLng){
-  def this(lat:Double, lng:Double) = this(new LatLng(lat,lng))
-  override def toString = "(%f,%f)".format(latlng.getLatitude,latlng.getLongitude)
+class Location(val lat:Double, val lng:Double){
+  val latLng = new LatLng(lat,lng)
+  override def toString = "(%f,%f)".format(lat,lng)
 }
 
 object Location {

@@ -3,6 +3,8 @@ package com.codeandmagic.ukgist.model
 import de.micromata.opengis.kml.v_2_2_0.{Polygon => KmlPolygon, LinearRing => KmlLinearRing, Coordinate => KmlCoordinate, Document, Placemark, Kml}
 import com.codeandmagic.ukgist.schema._
 import scala.collection.JavaConversions.asScalaBuffer
+import com.vividsolutions.jts.index.strtree.STRtree
+import com.vividsolutions.jts.geom.{Coordinate, Envelope}
 
 //converts Java List to Scala Buffer
 import scala.math.{min,max}
@@ -14,6 +16,12 @@ import scala.math.{min,max}
 trait Area {
   val id:Long
   val name:String
+
+  /**
+   * Minimum Bounding Rectangle (MBR). Basically Latitude and Longitude MIN and MAX values
+   * Used for quick calculations, like checking if the area DOES NOT contain a Location.
+   */
+  val boundingBox:(Double,Double,Double,Double)
 
   /**
    * Checks if the passed location is within the bounding box of this area.
@@ -46,11 +54,8 @@ extends Area{
    */
   lazy private val coordinates:Seq[KmlCoordinate] = kml.flatMap( KmlArea.kmlPolygonToCoordinatesSeq(_) ).getOrElse(Nil)
 
-  /**
-   * Latitude and Longitude MIN and MAX values. Basically the bounding box for this area.
-   * Used for quick calculations, like checking if the area DOES NOT contain a Location.
-   */
-  lazy private val (north,south,west,east) = KmlArea.getBoundingBox(coordinates)
+  lazy val boundingBox = KmlArea.getBoundingBox(coordinates)
+  lazy private val (north, south, west, east) = boundingBox
 
   /**
    * If this area has an kml with a polygon geometry this will hold the geometry as a JST polygon.
@@ -59,9 +64,7 @@ extends Area{
   lazy private val geometry = kml.flatMap(KmlArea.kmlPolygonToGeometry(_))
 
 
-  def containsMaybe(loc: Location) = (loc.latlng.getLatitude, loc.latlng.getLongitude) match {
-    case (lat,lng) => lat >= south && lat <= north && lng >= west && lng <= east
-  }
+  def containsMaybe(loc: Location) = loc.lat >= south && loc.lat <= north && loc.lng >= west && loc.lng <= east
 
   def containsDefinitely(loc: Location) = geometry.map(
     KmlArea.geometryContainsLocation(_,loc)
@@ -105,7 +108,7 @@ trait GeometryUtils{
   def kmlPolygonToGeometry(kml: Kml):Option[Geometry] = ifPolygon(kml)(kmlPolygonToJtsPolygon(_))
 
   def geometryContainsLocation(geo:Geometry, l:Location):Boolean = geo.intersects(
-    new Point(coordinateFactory.create(Array(new Coordinate(l.latlng.getLatitude, l.latlng.getLongitude))), geometryFactory)
+    new Point(coordinateFactory.create(Array(new Coordinate(l.lat, l.lng))), geometryFactory)
   )
 
   def getBoundingBox(coordinates:Seq[KmlCoordinate]):(Double,Double,Double,Double) =
@@ -134,5 +137,27 @@ object KmlArea extends KmlAreaDao with GeometryUtils{
     }
     case _ => false
   }
+
+}
+
+class AreaIndex(val areas:Seq[Area]){
+  private val tree = new STRtree
+
+  //add all areas in the search index
+  areas.foreach(a => a.boundingBox match {
+    case (n,s,w,e) => tree.insert(new Envelope(new Coordinate(s,w),new Coordinate(n,e)), a)
+  })
+
+  /**
+   * Returns all areas that contain this location within them
+   * @param location
+   * @return
+   */
+  def query(location:Location):Seq[Area] = tree
+    //first fast-query the index to get the ones that have the location in their bounding box
+    .query(new Envelope(new Coordinate(location.lat, location.lng)))
+    .map( _.asInstanceOf[Area] )
+    //then select only the ones that exactly contain the location
+    .filter( _.containsDefinitely(location) )
 
 }

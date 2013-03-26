@@ -13,7 +13,8 @@ resolvers ++= Seq(
     "moved-scala-tools-snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
     "snapshots-repo" at "http://scala-tools.org/repo-snapshots",
     "java-net" at "http://download.java.net/maven/2",
-    "thirdparty" at "http://codeandmagic.org/nexus/content/repositories/thirdparty"
+    "thirdparty" at "http://codeandmagic.org/nexus/content/repositories/thirdparty",
+    "sourceforge" at "http://sourceforge.net/projects/jsi/files/m2_repo"
 )
 
 libraryDependencies ++= Seq(
