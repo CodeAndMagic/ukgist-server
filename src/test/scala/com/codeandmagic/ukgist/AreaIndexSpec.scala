@@ -57,7 +57,7 @@ class AreaIndexSpec extends Specification with Loggable{
       val startIndexedSearch = System.currentTimeMillis()
       locs.foreach(bigAreaIndex.query(_))
       val durationIndexedSearch = System.currentTimeMillis() - startIndexedSearch
-      logger.info("Run time for %d indexed searches was %d ms".format(SPEED_TEST_ITERATIONS,durationIndexedSearch))
+      logger.info("Run time for %d indexed searches was %d ms\n".format(SPEED_TEST_ITERATIONS,durationIndexedSearch))
 
       durationNormalSearch must be_>(durationIndexedSearch)
     }
