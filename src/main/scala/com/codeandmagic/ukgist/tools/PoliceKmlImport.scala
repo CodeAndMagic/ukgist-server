@@ -11,7 +11,6 @@ object KmlImport extends App{
     super.main(args)
     apply()
   }
-
   val argsWithIndex = args.zipWithIndex
   private val name = getClass.getSimpleName
   val PROGRAM_NAME = name.substring(0,name.indexOf("$") match {
@@ -36,7 +35,8 @@ object KmlImport extends App{
     case ("--type",_) => throw new IllegalArgumentException("You need to specify a type. Possible values %s".format(TYPE_VALUES))
     case _ => false
   }) match {
-    case Some((_,i)) => AreaType.withName(args(i+1))
+    case Some((_,i)) => try{ AreaType.withName(args(i+1)) }
+      catch { case e:NoSuchElementException => throw new NoSuchElementException("No Area type %s. Possible values are %s".format(args(i+1),TYPE_VALUES)) }
     case None => TYPE_DEFAULT
   }
 

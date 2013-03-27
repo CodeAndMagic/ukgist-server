@@ -43,7 +43,7 @@ trait Area {
 }
 
 object AreaType extends Enumeration{
-  val POLICE = Value
+  val POLICE,OTHER = Value
 }
 
 class KmlArea(
