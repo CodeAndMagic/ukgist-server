@@ -9,6 +9,7 @@ import org.orbroker.Token
  */
 
 object KmlAreaSchemaTokens extends TokenSet(true) {
-val getById = Token('kmlAreaGetById, KmlAreaExtractor)
-val getByIdWithoutKml = Token('kmlAreaGetByIdWithoutKml, KmlAreaExtractor.WithoutKml)
+  val getById = Token('kmlAreaGetById, KmlPolygonAreaExtractor)
+  val listAll = Token('kmlAreaListAll, KmlPolygonAreaExtractor)
+  val deleteByType = Token[Int]('kmlAreaDeleteByType)
 }

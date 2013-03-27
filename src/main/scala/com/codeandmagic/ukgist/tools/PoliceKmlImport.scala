@@ -1,12 +1,16 @@
 package com.codeandmagic.ukgist.tools
 
-import com.codeandmagic.ukgist.model.AreaType
+import com.codeandmagic.ukgist.model.{Area, AreaDao, PolygonArea}
+import com.vividsolutions.jts.geom.{Polygon => JstPolygon}
+import de.micromata.opengis.kml.v_2_2_0.Kml
+import com.codeandmagic.ukgist.util.KmlUtils
 
 /**
  * User: cvrabie
  * Date: 26/03/2013
  */
-object KmlImport extends App{
+object PoliceKmlImport extends App{
+
   override def main(args: Array[String]) {
     super.main(args)
     apply()
@@ -23,20 +27,17 @@ object KmlImport extends App{
   val ONE = args.contains("--one")
   val CLEAR = args.contains("--clear")
 
-  private val ts = AreaType.values
 
-  val TYPE_VALUES = ts.head.toString + ts.takeRight(ts.size-1).foldLeft(new StringBuilder)(
-    (sb,at)=>sb.append(", ").append(at.toString)).toString
 
-  val TYPE_DEFAULT = AreaType.POLICE
+  val TYPE_DEFAULT = Area.Kind.POLICE
 
-  val TYPE:AreaType.Value = argsWithIndex.find(_ match {
+  val TYPE:Area.Kind.Value = argsWithIndex.find(_ match {
     case ("--type",i) if (i < args.length-1 && !args(i+1).startsWith("--")) => true
-    case ("--type",_) => throw new IllegalArgumentException("You need to specify a type. Possible values %s".format(TYPE_VALUES))
+    case ("--type",_) => throw new IllegalArgumentException("You need to specify a type. Possible values %s".format(Area.Kind.CSV))
     case _ => false
   }) match {
-    case Some((_,i)) => try{ AreaType.withName(args(i+1)) }
-      catch { case e:NoSuchElementException => throw new NoSuchElementException("No Area type %s. Possible values are %s".format(args(i+1),TYPE_VALUES)) }
+    case Some((_,i)) => try{ Area.Kind.withName(args(i+1)) }
+      catch { case e:NoSuchElementException => throw new NoSuchElementException("No Area type %s. Possible values are %s".format(args(i+1),Area.Kind.CSV)) }
     case None => TYPE_DEFAULT
   }
 
@@ -48,7 +49,9 @@ object KmlImport extends App{
       |--many (default): Recursively imports an entire folder of kml files.
       |--clear: Clears all the areas from the database before importing. Only the areas of the specified --type are removed.
       |--type: The type of area that we are importing. Possible values are %s. Default is %s.
-    """.stripMargin.format(PROGRAM_NAME,TYPE_VALUES,TYPE_DEFAULT)
+    """.stripMargin.format(PROGRAM_NAME,Area.Kind.CSV,TYPE_DEFAULT)
+
+  val areaDao:AreaDao[PolygonArea] = PolygonArea
 
   def apply() =
     if (args.size>1) doStuff()
@@ -59,6 +62,9 @@ object KmlImport extends App{
   def doStuff(){
     println("""Debug: ONE(%b), CLEAR(%b), TYPE(%s)""".format(ONE,CLEAR,TYPE))
   }
-}
 
+  def clear(){
+    areaDao.deleteByType(TYPE)
+  }
+}
 

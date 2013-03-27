@@ -1,13 +1,13 @@
-package com.codeandmagic.ukgist
+package com.codeandmagic.ukgist.model
 
 import org.specs2.mutable.Specification
-import KmlAreaFixture._
+import PolygonAreaFixture._
 
 /**
  * User: cvrabie
  * Date: 25/03/2013
  */
-class KmlAreaSpec extends Specification{
+class PolygonAreaSpec extends Specification{
   "Neighbourhood City of London 1" should{
 
     "contain %s inside the bounding box".format(LONDON_1_LOCATION_INSIDE_CONVEX_PART) in{

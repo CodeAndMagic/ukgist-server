@@ -1,7 +1,7 @@
 package com.codeandmagic.ukgist.model
 
 import com.javadocmd.simplelatlng.LatLng
-import net.liftweb.util.Helpers.tryo
+import com.codeandmagic.ukgist.util.Dbl
 
 /**
  * User: cvrabie

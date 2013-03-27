@@ -1,22 +1,20 @@
-package com.codeandmagic.ukgist
+package com.codeandmagic.ukgist.service
 
-import model.{Location, KmlArea, AreaIndex}
 import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
 import de.micromata.opengis.kml.v_2_2_0.Kml
 import java.io.File
 import scala.math._
 import net.liftweb.common.Loggable
+import com.codeandmagic.ukgist.model.{Area, KmlPolygonArea, Location, PolygonAreaFixture}
 
 /**
  * User: cvrabie
  * Date: 25/03/2013
  */
 class AreaIndexSpec extends Specification with Loggable{
-  import KmlAreaFixture._
+  import PolygonAreaFixture._
   import AreaIndexFixture._
-
-  //args(skipAll = true) //
 
   logger.info("Loading KMZ with 1000 KMLs")
   val startLoad = System.currentTimeMillis()
@@ -68,9 +66,8 @@ object AreaIndexFixture extends Mockito{
   val BIG_KMZ_PATH = "src/test/resources/big.kmz"
   val BIG_KMZ = Kml.unmarshalFromKmz(new File(BIG_KMZ_PATH))
   val BIG_AREAS = BIG_KMZ.zipWithIndex.map( _ match {
-    case (kml,i)=> new KmlArea(i,""+i,Some(kml))
+    case (kml,i)=> new KmlPolygonArea(i,""+i,Area.Kind.POLICE,kml)
   })
-  assert(BIG_AREAS.find(_.kml.isEmpty).isEmpty)
   val LONDON_1_INDEX = 742
   val (latMin, lngMin, latMax, lngMax) = (50.828106, -4.441416, 58.315364, 0.896581)
   val SPEED_TEST_ITERATIONS = 100000
