@@ -42,6 +42,10 @@ trait Area {
   def containsDefinitely(loc:Location):Boolean
 }
 
+object AreaType extends Enumeration{
+  val POLICE = Value
+}
+
 class KmlArea(
   override val id:Long,
   override val name:String,
