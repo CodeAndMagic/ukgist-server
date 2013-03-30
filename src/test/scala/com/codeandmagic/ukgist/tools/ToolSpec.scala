@@ -58,6 +58,7 @@ class ToolSpec extends Specification{
 object ToolFixture extends Mockito{
   class TestTool(override val args:String*) extends Tool(args:_*) {
     val OUTPUT = new ByteArrayOutputStream()
+    val REQUIRED_PARAMETERS = 1
     override val OUT = new PrintStream(OUTPUT)
     override val HELP_MESSAGE = "abc"
     val EXECUTE_MESSAGE = "executed"

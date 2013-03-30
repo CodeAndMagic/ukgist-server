@@ -1,7 +1,8 @@
 package com.codeandmagic.ukgist.tools
 
-import com.codeandmagic.ukgist.model.{Area, AreaDao, PolygonArea}
+import com.codeandmagic.ukgist.model.{KmlPolygonArea, Area, AreaDao, PolygonArea}
 import com.vividsolutions.jts.geom.{Polygon => JstPolygon}
+import java.io.File
 
 /**
  * User: cvrabie
@@ -18,6 +19,7 @@ object PoliceKmlImport extends App{
  * provided by the Police Data website http://www.police.uk/data
  */
 class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
+  val REQUIRED_PARAMETERS = 1
 
   if (args.contains("--one") && args.contains("--many"))
     throw new IllegalArgumentException("Do you want --one or --many?")
@@ -35,6 +37,16 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
 
   val PREFIX:String = getArgumentParameter("--prefix", defaultStringDeserializer, "","")
 
+  val KML_FILE_PATH_DESERIALIZER = fileWithTypeDeserializer("kml")
+
+  private[tools] val PATH_MISSING = "You need to specify a file or folder path as the last argument."
+  val PATH:File = (ONE,args.length>0,args.lastOption) match {
+    case (true,true,Some(path)) => KML_FILE_PATH_DESERIALIZER(path)
+    case (false,true,Some(path)) => folderDeserializer(path)
+    case (_,true,None) => throw new IllegalArgumentException(PATH_MISSING)
+    case (_,false,_) => null //fail silently since we're not going to use the path anyway
+  }
+
   val HELP_MESSAGE =
     """
       |Imports one or multiple *.kml files as areas in the database.
@@ -48,13 +60,36 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
 
   val areaDao:AreaDao[PolygonArea] = PolygonArea
 
+  override def apply():PoliceKmlTool = {
+    super.apply()
+    this
+  }
 
   def execute(){
-    OUT.println("""Debug: ONE(%b), CLEAR(%b), TYPE(%s), PREFIX(%s)""".format(ONE,CLEAR,KIND,PREFIX))
+    if(CLEAR) clear()
+    val areas = if(ONE) readOne()::Nil else readMany()
+    writeAll(areas)
   }
 
+  private[tools] val CLEAR_QUESTION="Are you sure you want to clear the database? [y/n]: "
+  private[tools] val CLEAR_START="Removing from database all areas of type %s."
+  private[tools] val CLEAR_SKIPPED="Cancelled area database deletion."
+
   def clear(){
-    areaDao.deleteByType(KIND)
+    OUT.print(CLEAR_QUESTION)
+    val sure = IN.read()
+    OUT.println("\n")
+    if (sure == 'y') {
+      OUT.println(CLEAR_START.format(KIND))
+      areaDao.deleteByType(KIND)
+    }else{
+      OUT.println(CLEAR_SKIPPED)
+      throw new RuntimeException("Execution aborted")
+    }
   }
+
+  def readOne():KmlPolygonArea = null
+  def readMany():Seq[KmlPolygonArea] = null
+  def writeAll(areas:Seq[KmlPolygonArea]) = null
 }
 

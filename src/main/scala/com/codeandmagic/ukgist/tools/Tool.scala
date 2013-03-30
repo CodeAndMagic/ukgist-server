@@ -1,6 +1,7 @@
 package com.codeandmagic.ukgist.tools
 
-import java.io.PrintStream
+import java.io.{InputStream, File, PrintStream}
+import com.codeandmagic.ukgist.util.FileOps._
 
 /**
  * User: cvrabie
@@ -8,6 +9,7 @@ import java.io.PrintStream
  */
 abstract class Tool(val args:String*){
   val OUT:PrintStream = System.out
+  val IN:InputStream = System.in
 
   val argsWithIndex = args.zipWithIndex
   private val name = getClass.getSimpleName
@@ -16,7 +18,7 @@ abstract class Tool(val args:String*){
     case _ => name.length
   })
 
-  def isArgumentParameter(i:Int) = i < args.length-1 && !args(i+1).startsWith("--")
+  def isArgumentParameter(i:Int) = i < args.length-REQUIRED_PARAMETERS-1 && !args(i+1).startsWith("--")
 
   def getArgumentParameter[T](ARG_NAME:String,deserializer:(String)=>T,default:T, extraMsg:String):T =
     argsWithIndex.find(_ match {
@@ -30,12 +32,28 @@ abstract class Tool(val args:String*){
 
   val defaultStringDeserializer = (s:String) => s
 
+  val fileDeserializer = (path:String) => new File(path) match {
+    case f if f.exists && f.isFile => f
+    case _ => throw new IllegalArgumentException("%s is not a valid file.".format(path))
+  }
+
+  def fileWithTypeDeserializer(extension:String) = (path:String) => fileDeserializer(path) match {
+    case f if f.extension==extension => f
+    case _ => throw new IllegalArgumentException("%s is not of expected type *.'%s'".format(path,extension))
+  }
+
+  val folderDeserializer = (path:String) => new File(path) match {
+    case f if f.exists && f.isDirectory => f
+    case _ => throw new IllegalArgumentException("%s is not a valid folder".format(path))
+  }
+
   def apply():Tool = {
     if (args.size > 0) execute()
     else help()
     this
   }
 
+  val REQUIRED_PARAMETERS:Int
   val HELP_MESSAGE:String
   def help() = OUT.println(HELP_MESSAGE)
   def execute()
