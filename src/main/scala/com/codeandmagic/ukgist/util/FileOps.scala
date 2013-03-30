@@ -32,6 +32,12 @@ class FileOps(val file:File) {
     case (name, i) if i>=0 && i<name.length-1 => name.substring(i+1)
     case _ => ""
   }
+
+  lazy val nameWithoutExtension = (file.getName, file.getName.lastIndexOf('.')) match {
+    case (name, i) if i>0 => name.substring(0,i)
+    case (name, _) => name
+    case _ => ""
+  }
 }
 
 object FileOps{

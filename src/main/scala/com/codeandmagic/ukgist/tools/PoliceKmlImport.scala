@@ -20,8 +20,11 @@
 package com.codeandmagic.ukgist.tools
 
 import com.codeandmagic.ukgist.model.{KmlPolygonArea, Area, AreaDao, PolygonArea}
+import com.codeandmagic.ukgist.util.FileOps._
 import com.vividsolutions.jts.geom.{Polygon => JstPolygon}
-import java.io.File
+import java.io.{FileFilter, File}
+import net.liftweb.util.Helpers.tryo
+import de.micromata.opengis.kml.v_2_2_0.Kml
 
 /**
  * User: cvrabie
@@ -56,7 +59,11 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
 
   val PREFIX:String = getArgumentParameter("--prefix", defaultStringDeserializer, "","")
 
-  val KML_FILE_PATH_DESERIALIZER = fileWithTypeDeserializer("kml")
+  val KML_EXTENSION = "kml"
+  val KML_FILE_FILTER = new FileFilter {
+    def accept(file: File) = file.extension == KML_EXTENSION
+  }
+  val KML_FILE_PATH_DESERIALIZER = fileWithTypeDeserializer(KML_EXTENSION)
 
   private[tools] val PATH_MISSING = "You need to specify a file or folder path as the last argument."
   val PATH:File = (ONE,args.length>0,args.lastOption) match {
@@ -90,25 +97,38 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
     writeAll(areas)
   }
 
-  private[tools] val CLEAR_QUESTION="Are you sure you want to clear the database? [y/n]: "
-  private[tools] val CLEAR_START="Removing from database all areas of type %s."
-  private[tools] val CLEAR_SKIPPED="Cancelled area database deletion."
+  val MSG_CLEAR_QUESTION="Are you sure you want to clear the database? [y/n]: "
+  val MSG_CLEAR_START="Removing from database all areas of type %s."
+  val MSG_CLEAR_SKIPPED="Cancelled area database deletion."
 
   def clear(){
-    OUT.print(CLEAR_QUESTION)
+    OUT.print(MSG_CLEAR_QUESTION)
     val sure = IN.read()
     OUT.println("\n")
     if (sure == 'y') {
-      OUT.println(CLEAR_START.format(KIND))
+      OUT.println(MSG_CLEAR_START.format(KIND))
       areaDao.deleteByType(KIND)
     }else{
-      OUT.println(CLEAR_SKIPPED)
+      OUT.println(MSG_CLEAR_SKIPPED)
       throw new RuntimeException("Execution aborted")
     }
   }
 
-  def readOne():KmlPolygonArea = null
-  def readMany():Seq[KmlPolygonArea] = null
+  def readOne():KmlPolygonArea = readOne(PATH, "")
+
+  def readOne(file:File, breadcrumb:String):KmlPolygonArea = {
+    val name = PREFIX + breadcrumb + file.nameWithoutExtension
+    new KmlPolygonArea(-1, name, KIND, Kml.unmarshal(file))
+  }
+
+  def readMany():Seq[KmlPolygonArea] = readMany(PATH, "")
+
+  def readMany(dir:File, breadcrumb:String):Seq[KmlPolygonArea] = dir.listFiles(KML_FILE_FILTER).toSeq.flatMap(file => {
+    val newBreadcrumb = breadcrumb+"-"+dir.getName
+    if (file.isDirectory) readMany(file,newBreadcrumb)
+    else tryo{ readOne(file,newBreadcrumb) }
+  })
+
   def writeAll(areas:Seq[KmlPolygonArea]) = null
 }
 

@@ -24,6 +24,7 @@ import org.specs2.mock.Mockito
 import com.codeandmagic.ukgist.model.{PolygonArea, AreaDao, Area}
 import java.util.NoSuchElementException
 import java.io._
+import com.codeandmagic.ukgist.util.InvalidKmlException
 
 /**
  * User: cvrabie
@@ -31,25 +32,29 @@ import java.io._
  */
 class PoliceKmlImportSpec extends Specification{
   import PoliceKmlImportFixture._
+  import com.codeandmagic.ukgist.model.PolygonAreaFixture.beAPolygon
+  import com.codeandmagic.ukgist.model.PolygonAreaFixture.LONDON_1_KML_OUTER
 
-  "PoliceKmlImportSpec" should{
-    "correctly decode valid Area.KIND arguments" in{
+  "PoliceKmlImport.KIND" should{
+    "correctly decode valid --kind parameters" in{
       tool(FLAG_KIND, FLAG_KIND_OTHER, PATH_DIR).KIND must beEqualTo(FLAG_KIND_OTHER_EXPECTED)
       tool(FLAG_KIND, FLAG_KIND_POLICE, PATH_DIR).KIND must beEqualTo(FLAG_KIND_POLICE_EXPECTED)
     }
 
-    "provide POLICE as default --kind" in{
+    "provide POLICE as default if --kind argument is not present" in{
       tool(PATH_DIR).KIND must beEqualTo(FLAG_KIND_POLICE_EXPECTED)
     }
 
-    "throw NoSuchElementException if an incorrect kind is provided" in{
+    "throw NoSuchElementException if an incorrect --kind is provided" in{
       tool(FLAG_KIND,FLAG_KIND_INVALID, PATH_DIR) must throwA(manifest[NoSuchElementException])
     }
 
     "throw InvalidArgumentException if the --kind parameter is missing" in{
       tool(FLAG_KIND, PATH_DIR) must throwA(manifest[IllegalArgumentException])
     }
+  }
 
+  "PoliceKmlImport.CLEAR" should{
     "correctly read the --clear argument" in{
       tool(FLAG_CLEAR, PATH_DIR).CLEAR must beTrue
     }
@@ -57,7 +62,9 @@ class PoliceKmlImportSpec extends Specification{
     "provide FALSE as default if the --clear argument is not present" in{
       tool(FLAG_KIND,FLAG_KIND_OTHER, PATH_DIR).CLEAR must beFalse
     }
+  }
 
+  "PoliceKmlImport.ONE" should{
     "correctly read the --one argument" in{
       tool(FLAG_ONE, PATH_KML).ONE must beTrue
     }
@@ -73,7 +80,9 @@ class PoliceKmlImportSpec extends Specification{
     "be confused if both --one and --many are present" in{
       tool(FLAG_ONE, FLAG_MANY, PATH_DIR) must throwA(manifest[IllegalArgumentException])
     }
+  }
 
+  "PoliceKmlImport.PREFIX" should{
     "correctly read the --prefix argument" in{
       tool(FLAG_PREFIX, FLAG_PREFIX_VAL, PATH_DIR).PREFIX must beEqualTo(FLAG_PREFIX_VAL)
     }
@@ -85,7 +94,9 @@ class PoliceKmlImportSpec extends Specification{
     "provide empty string as default prefix if the --prefix flag is missing" in {
       tool(PATH_DIR).PREFIX must beEqualTo("")
     }
+  }
 
+  "PoliceKmlImport.PATH" should{
     "correctly read the kml file if the --one flag is present" in{
       tool(FLAG_ONE,PATH_KML).PATH must beAFile.and(exist)
     }
@@ -109,20 +120,38 @@ class PoliceKmlImportSpec extends Specification{
     "throw IllegalArgumentException if --one is present and PATH is not a KML file" in{
       tool(FLAG_ONE,PATH_KMZ) must throwA[IllegalArgumentException]
     }
+  }
 
+  "PoliceKmlImport.clear()" should{
     "ask for permission before clearing the database" in{
-      val t = tool(FLAG_ONE,FLAG_CLEAR,PATH_KML).apply()
-      val expected = t.CLEAR_QUESTION+"\n\n"+(t.CLEAR_START.format(Area.Kind.POLICE.toString))+"\n"
+      val t = tool(FLAG_ONE,FLAG_CLEAR,PATH_KML)
+      t.clear()
+      val expected = t.MSG_CLEAR_QUESTION+"\n\n"+(t.MSG_CLEAR_START.format(Area.Kind.POLICE.toString))+"\n"
       t.OUTPUT.toString must beEqualTo(expected)
       there was one(t.areaDao).deleteByType(any)
     }
 
     "abort if the permission for clearing the database is not given" in{
       val t = tool(FLAG_ONE,FLAG_CLEAR,PATH_KML)(new ByteArrayInputStream("n".getBytes))
-      t.apply() must throwA(manifest[RuntimeException])
-      val expected = t.CLEAR_QUESTION+"\n\n"+t.CLEAR_SKIPPED+"\n"
+      t.clear() must throwA(manifest[RuntimeException])
+      val expected = t.MSG_CLEAR_QUESTION+"\n\n"+t.MSG_CLEAR_SKIPPED+"\n"
       t.OUTPUT.toString must beEqualTo(expected)
       there was no(t.areaDao).deleteByType(any)
+    }
+  }
+
+  "PoliceKmlImport.readOne()" should{
+    "correctly decode a PolygonArea from a valid KML" in{
+      val t = tool(FLAG_ONE,PATH_KML)
+      val area = t.readOne()
+      area.name must beEqualTo(FILE_KML)
+      area.kind must beEqualTo(Area.Kind.POLICE)
+      area.geometry must beAPolygon(LONDON_1_KML_OUTER,Nil)
+    }
+
+    "throw InvalidKmlException exception if the passed file is broken" in {
+      val t = tool(FLAG_ONE,BROKEN_KML_PATH)
+      t.readOne() must throwA(manifest[InvalidKmlException])
     }
   }
 }
@@ -154,7 +183,9 @@ object PoliceKmlImportFixture extends Mockito{
   val FLAG_MANY = "--many"
   val FLAG_PREFIX = "--prefix"
   val FLAG_PREFIX_VAL = "abcd"
-  val PATH_KML = "src/test/resources/city-of-london-ce.kml"
+  val FILE_KML = "city-of-london-ce"
+  val PATH_KML = "src/test/resources/"+FILE_KML+".kml"
+  val BROKEN_KML_PATH = "src/test/resources/broken.kml"
   val PATH_KMZ = "src/test/resources/big.kmz"
   val PATH_DIR = "src/test/resources/"
 }
