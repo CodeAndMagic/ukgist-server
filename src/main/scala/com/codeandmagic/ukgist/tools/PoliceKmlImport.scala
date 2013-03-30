@@ -116,17 +116,20 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
 
   def readOne():KmlPolygonArea = readOne(PATH, "")
 
-  def readOne(file:File, breadcrumb:String):KmlPolygonArea = {
-    val name = PREFIX + breadcrumb + file.nameWithoutExtension
+  protected def readOne(file:File, breadcrumb:String):KmlPolygonArea = {
+    val dash = if (PREFIX.isEmpty && breadcrumb.isEmpty) "" else "-"
+    val name = PREFIX + breadcrumb + dash + file.nameWithoutExtension
     new KmlPolygonArea(-1, name, KIND, Kml.unmarshal(file))
   }
 
   def readMany():Seq[KmlPolygonArea] = readMany(PATH, "")
 
-  def readMany(dir:File, breadcrumb:String):Seq[KmlPolygonArea] = dir.listFiles(KML_FILE_FILTER).toSeq.flatMap(file => {
-    val newBreadcrumb = breadcrumb+"-"+dir.getName
+  protected def readMany(dir:File, breadcrumb:String):Seq[KmlPolygonArea] = dir.listFiles().toSeq.flatMap(file => {
+    val dash = if(breadcrumb.isEmpty) "" else  "-"
+    val newBreadcrumb = breadcrumb+dash+dir.getName
     if (file.isDirectory) readMany(file,newBreadcrumb)
-    else tryo{ readOne(file,newBreadcrumb) }
+    else if (file.extension==KML_EXTENSION) tryo{ readOne(file,newBreadcrumb) }.toSeq
+      else Seq()
   })
 
   def writeAll(areas:Seq[KmlPolygonArea]) = null

@@ -22,7 +22,7 @@ package com.codeandmagic.ukgist.model
 import org.specs2.mock.Mockito
 import java.io.FileInputStream
 import org.orbroker.Row
-import org.specs2.matcher.{Expectable, Matcher}
+import org.specs2.matcher.{Matcher, Expectable}
 import de.micromata.opengis.kml.v_2_2_0.{Placemark, Document, Polygon, Kml}
 import scala.collection.JavaConversions.asScalaBuffer
 import com.vividsolutions.jts.geom.{Polygon=>JstPolygon}
@@ -86,26 +86,34 @@ object PolygonAreaFixture extends Mockito{
     }
   }
 
-  class PolygonMatcher(
-     expectedOuterCoordinates:Seq[Double],
-     expectedInnerCoordinates:Seq[Double]*
-   ) extends Matcher[JstPolygon]{
-    def apply[S <: geom.Polygon](t: Expectable[S]) = {
-
-      val poly:JstPolygon = t.value
+  object PolygonMatcher{
+    def isAPoly(poly:JstPolygon, expectedOuter:Seq[Double], expectedInner:Seq[Seq[Double]]) = {
       val actualOuterCoordinates:Seq[Double] = poly.getExteriorRing.getCoordinates.map(c => Seq(c.x, c.y, 0:Double)).flatten.sortWith(_<_)
       val actualInnerCoordinates:Seq[Double] = 0.until(poly.getNumInteriorRing)
         .map(i=>poly.getInteriorRingN(i).getCoordinates
-          .map(c=>Seq(c.x,c.y,0:Double)).flatten).flatten.sortWith(_<_)
-
-      result(
-        expectedOuterCoordinates.sortWith(_<_) == actualOuterCoordinates && expectedInnerCoordinates.flatten.sortWith(_<_) == actualInnerCoordinates,
-        t.description+" has the same bounding polygon",
-        t.description+" does not match the bounding polygon",
-        t
-      )
+        .map(c=>Seq(c.x,c.y,0:Double)).flatten).flatten.sortWith(_<_)
+      expectedOuter.sortWith(_<_) == actualOuterCoordinates && expectedInner.flatten.sortWith(_<_) == actualInnerCoordinates
     }
   }
+
+  class PolygonMatcher( expectedOuterCoordinates:Seq[Double], expectedInnerCoordinates:Seq[Double]*)
+  extends Matcher[JstPolygon]{
+    def apply[S <: geom.Polygon](t: Expectable[S]) = result(
+      PolygonMatcher.isAPoly(t.value,expectedOuterCoordinates, expectedInnerCoordinates),
+      t.description+" has the same bounding polygon", t.description+" does not match the bounding polygon", t
+    )
+  }
+
+  class PolygonAreaMatcher( expectedOuterCoordinates:Seq[Double], expectedInnerCoordinates:Seq[Double]*)
+    extends Matcher[PolygonArea]{
+    def apply[S <: PolygonArea](t: Expectable[S]) = result(
+      PolygonMatcher.isAPoly(t.value.geometry,expectedOuterCoordinates, expectedInnerCoordinates),
+      t.description+" has the same bounding polygon", t.description+" does not match the bounding polygon", t
+    )
+  }
+
+  def beAPolygonArea(expectedOuterCoordinates:Seq[Double], expectedInnerCoordinates:Seq[Double]*) =
+    new PolygonAreaMatcher(expectedOuterCoordinates, expectedInnerCoordinates:_*)
 
   def beAPolygon(expectedOuterCoordinates:Seq[Double], expectedInnerCoordinates:Seq[Double]*) =
     new PolygonMatcher(expectedOuterCoordinates, expectedInnerCoordinates:_*)

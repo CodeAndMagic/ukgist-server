@@ -32,7 +32,7 @@ import com.codeandmagic.ukgist.util.InvalidKmlException
  */
 class PoliceKmlImportSpec extends Specification{
   import PoliceKmlImportFixture._
-  import com.codeandmagic.ukgist.model.PolygonAreaFixture.beAPolygon
+  import com.codeandmagic.ukgist.model.PolygonAreaFixture.beAPolygonArea
   import com.codeandmagic.ukgist.model.PolygonAreaFixture.LONDON_1_KML_OUTER
 
   "PoliceKmlImport.KIND" should{
@@ -146,12 +146,29 @@ class PoliceKmlImportSpec extends Specification{
       val area = t.readOne()
       area.name must beEqualTo(FILE_KML)
       area.kind must beEqualTo(Area.Kind.POLICE)
-      area.geometry must beAPolygon(LONDON_1_KML_OUTER,Nil)
+      area must beAPolygonArea(LONDON_1_KML_OUTER,Nil)
     }
 
     "throw InvalidKmlException exception if the passed file is broken" in {
       val t = tool(FLAG_ONE,BROKEN_KML_PATH)
       t.readOne() must throwA(manifest[InvalidKmlException])
+    }
+  }
+
+  "PoliceKmlImport.readMany()" should{
+    "recursively decode PolygonAreas from a folder with KMLs" in{
+      val t = tool(PATH_DIR)
+      val areas:Seq[PolygonArea] = t.readMany()
+      areas.length must beEqualTo(3)
+      val a1 = areas.find(_.name == "kmls-k1")
+      a1 must beSome
+      a1.get must beAPolygonArea(LONDON_1_KML_OUTER,Nil)
+      val a2 = areas.find(_.name == "kmls-sub1-k2")
+      a2 must beSome
+      a2.get must beAPolygonArea(LONDON_1_KML_OUTER,Nil)
+      val a3 = areas.find(_.name == "kmls-sub1-k3")
+      a3 must beSome
+      a3.get must beAPolygonArea(LONDON_1_KML_OUTER,Nil)
     }
   }
 }
@@ -187,5 +204,5 @@ object PoliceKmlImportFixture extends Mockito{
   val PATH_KML = "src/test/resources/"+FILE_KML+".kml"
   val BROKEN_KML_PATH = "src/test/resources/broken.kml"
   val PATH_KMZ = "src/test/resources/big.kmz"
-  val PATH_DIR = "src/test/resources/"
+  val PATH_DIR = "src/test/resources/kmls"
 }
