@@ -29,7 +29,7 @@ import com.codeandmagic.ukgist.model.Area.BoundingBox
 /**
  * Defines a grouping for statistics, usually geographic.
  */
-abstract class Area(
+abstract case class Area(
   val id: Long,
   val name: String,
   val kind: Area.Kind.Value
@@ -96,5 +96,7 @@ trait AreaDao[T<:Area]{
    * @return
    */
   def listAll():Seq[T]
+
+  def saveAll(areas:Seq[T]):Seq[T]
 }
 

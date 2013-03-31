@@ -31,4 +31,5 @@ object KmlAreaSchemaTokens extends TokenSet(true) {
   val getById = Token('kmlAreaGetById, KmlPolygonAreaExtractor)
   val listAll = Token('kmlAreaListAll, KmlPolygonAreaExtractor)
   val deleteByType = Token[Int]('kmlAreaDeleteByType)
+  val saveAll = Token[Int]('kmlAreaSaveAll)
 }

@@ -132,6 +132,6 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
       else Seq()
   })
 
-  def writeAll(areas:Seq[KmlPolygonArea]) = null
+  def writeAll(areas:Seq[KmlPolygonArea]) = areaDao.saveAll(areas)
 }
 
