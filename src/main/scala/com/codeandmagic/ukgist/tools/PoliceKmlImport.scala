@@ -19,12 +19,13 @@
 
 package com.codeandmagic.ukgist.tools
 
-import com.codeandmagic.ukgist.model.{KmlPolygonArea, Area, AreaDao, PolygonArea}
+import com.codeandmagic.ukgist.model._
 import com.codeandmagic.ukgist.util.FileOps._
 import com.vividsolutions.jts.geom.{Polygon => JstPolygon}
 import java.io.{FileFilter, File}
 import net.liftweb.util.Helpers.tryo
 import de.micromata.opengis.kml.v_2_2_0.Kml
+import scala.Some
 
 /**
  * User: cvrabie
@@ -48,14 +49,14 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
   val ONE = args.contains("--one")
   val CLEAR = args.contains("--clear")
 
-  val KIND_DEFAULT = Area.Kind.POLICE
+  val SOURCE_DEFAULT = Area.Source.POLICE
 
-  val KIND_CSV = "Possible values are %s".format(Area.Kind.CSV)
+  val SOURCE_CSV = "Possible values are %s".format(Area.Source.CSV)
 
-  val areaKindDesearializer = (s:String) => try{ Area.Kind.withName(s) }
-    catch { case e:NoSuchElementException => throw new NoSuchElementException("No suck Area.Kind %s. %s".format(s,KIND_CSV)) }
+  val areaSourceDesearializer = (s:String) => try{ Area.Source.withName(s) }
+    catch { case e:NoSuchElementException => throw new NoSuchElementException("No suck Area.Source %s. %s".format(s,SOURCE_CSV)) }
 
-  val KIND:Area.Kind.Value = getArgumentParameter("--kind", areaKindDesearializer, KIND_DEFAULT, KIND_CSV)
+  val SOURCE:Area.Source.Value = getArgumentParameter("--source", areaSourceDesearializer, SOURCE_DEFAULT, SOURCE_CSV)
 
   val PREFIX:String = getArgumentParameter("--prefix", defaultStringDeserializer, "","")
 
@@ -73,18 +74,40 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
     case (_,false,_) => null //fail silently since we're not going to use the path anyway
   }
 
+  val INTERVAL_FORMAT_MESSAGE =
+    """
+      |You can specify an interval like this:
+      |D1/D2 => interval start on day D1 and ends just before D2
+      |/D2 => interval has no start and ends just before D2
+      |D1/ => interval starts on D1 and has no end
+      |D1 => interval depends on the format of D1 (see below)
+      |D1 and D2 are dates specified in either yyyy-MM-dd, yyyy-MM or yyyy formats
+      |If for example you specify an interval of 2012 this means the start is on
+      |2012-01-01T00:00:00 and the end is on 2013-01-01T00:00:00 (exclusive).
+      |If you use 2012-10-24/ this will define an interval starting on
+      |2012-10-24T00:00:00 and with no ending.
+    """.stripMargin
+
+  val VALIDITY_DESERIALIZER = (s:String) => Interval.unapply(s) match {
+    case Some(interval) => interval
+    case _ => throw new IllegalArgumentException("Incorrect interval")
+  }
+
+  val VALIDITY:Interval = getArgumentParameter("--valid",VALIDITY_DESERIALIZER,Interval.FOREVER,INTERVAL_FORMAT_MESSAGE)
+
   val HELP_MESSAGE =
     """
       |Imports one or multiple *.kml files as areas in the database.
-      |Usage: %s [--one|--many] [--clear] [--kind] FOLDER/FILE
+      |Usage: %s [--one|--many] [--clear] [--source] FOLDER/FILE
       |--one: Imports just one file as opposed to many of them.
       |--many (default): Recursively imports an entire folder of kml files.
-      |--clear: Clears all the areas from the database before importing. Only the areas of the specified --kind are removed.
-      |--kind: The type of area that we are importing. Possible values are %s. Default is %s.
+      |--clear: Clears all the areas from the database before importing. Only the areas of the specified --source are removed.
+      |--source: The type of area that we are importing. Possible values are %s. Default is %s.
+      |--valid: The interval while this is valid. Specify in the format 'YYYYMMDD-YYYYMMDD'. Either interval margins can be omitted.
       |--prefix: Prefix to be placed in front of the computed area name.
-    """.stripMargin.format(PROGRAM_NAME,Area.Kind.CSV,KIND_DEFAULT)
+    """.stripMargin.format(PROGRAM_NAME,Area.Source.CSV,SOURCE_DEFAULT)
 
-  val areaDao:AreaDao[PolygonArea] = PolygonArea
+  val areaDao:AreaDao[PoliceArea] = PoliceArea
 
   override def apply():PoliceKmlTool = {
     super.apply()
@@ -98,7 +121,7 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
   }
 
   val MSG_CLEAR_QUESTION="Are you sure you want to clear the database? [y/n]: "
-  val MSG_CLEAR_START="Removing from database all areas of type %s."
+  val MSG_CLEAR_START="Removing from database all areas with source %s."
   val MSG_CLEAR_SKIPPED="Cancelled area database deletion."
 
   def clear(){
@@ -106,32 +129,34 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
     val sure = IN.read()
     OUT.println("\n")
     if (sure == 'y') {
-      OUT.println(MSG_CLEAR_START.format(KIND))
-      areaDao.deleteByType(KIND)
+      OUT.println(MSG_CLEAR_START.format(SOURCE))
+      areaDao.deleteByType(SOURCE)
     }else{
       OUT.println(MSG_CLEAR_SKIPPED)
       throw new RuntimeException("Execution aborted")
     }
   }
 
-  def readOne():KmlPolygonArea = readOne(PATH, "")
+  def readOne():PoliceArea = readOne(PATH, Nil)
 
-  protected def readOne(file:File, breadcrumb:String):KmlPolygonArea = {
+  protected def readOne(file:File, breadcrumb:Seq[String]):PoliceArea = {
     val dash = if (PREFIX.isEmpty && breadcrumb.isEmpty) "" else "-"
-    val name = PREFIX + breadcrumb + dash + file.nameWithoutExtension
-    new KmlPolygonArea(-1, name, KIND, Kml.unmarshal(file))
+    val path = breadcrumb.foldLeft(new StringBuilder)((sb,b)=> if(sb.isEmpty) sb.append(b) else sb.append("-").append(b))
+    val basename = file.nameWithoutExtension
+    val name = PREFIX + path + dash + basename
+    val policeForce = breadcrumb.lastOption.getOrElse("")
+    new PoliceArea(-1, name, SOURCE, VALIDITY, Kml.unmarshal(file),policeForce,basename)
   }
 
-  def readMany():Seq[KmlPolygonArea] = readMany(PATH, "")
+  def readMany():Seq[PoliceArea] = readMany(PATH, Nil)
 
-  protected def readMany(dir:File, breadcrumb:String):Seq[KmlPolygonArea] = dir.listFiles().toSeq.flatMap(file => {
-    val dash = if(breadcrumb.isEmpty) "" else  "-"
-    val newBreadcrumb = breadcrumb+dash+dir.getName
+  protected def readMany(dir:File, breadcrumb:Seq[String]):Seq[PoliceArea] = dir.listFiles().toSeq.flatMap(file => {
+    val newBreadcrumb = breadcrumb :+ dir.getName
     if (file.isDirectory) readMany(file,newBreadcrumb)
     else if (file.extension==KML_EXTENSION) tryo{ readOne(file,newBreadcrumb) }.toSeq
       else Seq()
   })
 
-  def writeAll(areas:Seq[KmlPolygonArea]) = areaDao.saveAll(areas)
+  def writeAll(areas:Seq[PoliceArea]) = areaDao.saveAll(areas)
 }
 

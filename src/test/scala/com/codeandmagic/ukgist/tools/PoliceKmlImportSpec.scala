@@ -21,7 +21,7 @@ package com.codeandmagic.ukgist.tools
 
 import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
-import com.codeandmagic.ukgist.model.{PolygonArea, AreaDao, Area}
+import com.codeandmagic.ukgist.model.{PoliceArea, PolygonArea, AreaDao, Area}
 import java.util.NoSuchElementException
 import java.io._
 import com.codeandmagic.ukgist.util.InvalidKmlException
@@ -35,22 +35,22 @@ class PoliceKmlImportSpec extends Specification{
   import com.codeandmagic.ukgist.model.PolygonAreaFixture.beAPolygonArea
   import com.codeandmagic.ukgist.model.PolygonAreaFixture.LONDON_1_KML_OUTER
 
-  "PoliceKmlImport.KIND" should{
+  "PoliceKmlImport.SOURCE" should{
     "correctly decode valid --kind parameters" in{
-      tool(FLAG_KIND, FLAG_KIND_OTHER, PATH_DIR).KIND must beEqualTo(FLAG_KIND_OTHER_EXPECTED)
-      tool(FLAG_KIND, FLAG_KIND_POLICE, PATH_DIR).KIND must beEqualTo(FLAG_KIND_POLICE_EXPECTED)
+      tool(FLAG_SOURCE, FLAG_SOURCE_OTHER, PATH_DIR).SOURCE must beEqualTo(FLAG_SOURCE_OTHER_EXPECTED)
+      tool(FLAG_SOURCE, FLAG_SOURCE_POLICE, PATH_DIR).SOURCE must beEqualTo(FLAG_SOURCE_POLICE_EXPECTED)
     }
 
     "provide POLICE as default if --kind argument is not present" in{
-      tool(PATH_DIR).KIND must beEqualTo(FLAG_KIND_POLICE_EXPECTED)
+      tool(PATH_DIR).SOURCE must beEqualTo(FLAG_SOURCE_POLICE_EXPECTED)
     }
 
     "throw NoSuchElementException if an incorrect --kind is provided" in{
-      tool(FLAG_KIND,FLAG_KIND_INVALID, PATH_DIR) must throwA(manifest[NoSuchElementException])
+      tool(FLAG_SOURCE,FLAG_SOURCE_INVALID, PATH_DIR) must throwA(manifest[NoSuchElementException])
     }
 
     "throw InvalidArgumentException if the --kind parameter is missing" in{
-      tool(FLAG_KIND, PATH_DIR) must throwA(manifest[IllegalArgumentException])
+      tool(FLAG_SOURCE, PATH_DIR) must throwA(manifest[IllegalArgumentException])
     }
   }
 
@@ -60,7 +60,7 @@ class PoliceKmlImportSpec extends Specification{
     }
 
     "provide FALSE as default if the --clear argument is not present" in{
-      tool(FLAG_KIND,FLAG_KIND_OTHER, PATH_DIR).CLEAR must beFalse
+      tool(FLAG_SOURCE,FLAG_SOURCE_OTHER, PATH_DIR).CLEAR must beFalse
     }
   }
 
@@ -126,7 +126,7 @@ class PoliceKmlImportSpec extends Specification{
     "ask for permission before clearing the database" in{
       val t = tool(FLAG_ONE,FLAG_CLEAR,PATH_KML)
       t.clear()
-      val expected = t.MSG_CLEAR_QUESTION+"\n\n"+(t.MSG_CLEAR_START.format(Area.Kind.POLICE.toString))+"\n"
+      val expected = t.MSG_CLEAR_QUESTION+"\n\n"+(t.MSG_CLEAR_START.format(Area.Source.POLICE.toString))+"\n"
       t.OUTPUT.toString must beEqualTo(expected)
       there was one(t.areaDao).deleteByType(any)
     }
@@ -145,7 +145,7 @@ class PoliceKmlImportSpec extends Specification{
       val t = tool(FLAG_ONE,PATH_KML)
       val area = t.readOne()
       area.name must beEqualTo(FILE_KML)
-      area.kind must beEqualTo(Area.Kind.POLICE)
+      area.source must beEqualTo(Area.Source.POLICE)
       area must beAPolygonArea(LONDON_1_KML_OUTER,Nil)
     }
 
@@ -175,26 +175,26 @@ class PoliceKmlImportSpec extends Specification{
 
 object PoliceKmlImportFixture extends Mockito{
   implicit val in:InputStream = new ByteArrayInputStream("y".getBytes)
-  def tool(args:String*)(implicit in:InputStream):MockPoliceKmlTool =
-    new MockPoliceKmlTool(in,args:_*)
+  def tool(args:String*)(implicit in:InputStream):MockPoliceAreaTool =
+    new MockPoliceAreaTool(in,args:_*)
 
-  class MockPoliceKmlTool(val in:InputStream, override val args:String*) extends PoliceKmlTool(args:_*){
-    override val areaDao = mock[AreaDao[PolygonArea]]
+  class MockPoliceAreaTool(val in:InputStream, override val args:String*) extends PoliceKmlTool(args:_*){
+    override val areaDao = mock[AreaDao[PoliceArea]]
     val OUTPUT = new ByteArrayOutputStream()
     override val OUT = new PrintStream(OUTPUT)
     override val IN =  in
-    override def apply():MockPoliceKmlTool = {
+    override def apply():MockPoliceAreaTool = {
       super.apply()
       this
     }
   }
 
-  val FLAG_KIND = "--kind"
-  val FLAG_KIND_OTHER = "OTHER"
-  val FLAG_KIND_OTHER_EXPECTED = Area.Kind.OTHER
-  val FLAG_KIND_POLICE = "POLICE"
-  val FLAG_KIND_POLICE_EXPECTED = Area.Kind.POLICE
-  val FLAG_KIND_INVALID = "SOMEOTHER"
+  val FLAG_SOURCE = "--source"
+  val FLAG_SOURCE_OTHER = "OTHER"
+  val FLAG_SOURCE_OTHER_EXPECTED = Area.Source.OTHER
+  val FLAG_SOURCE_POLICE = "POLICE"
+  val FLAG_SOURCE_POLICE_EXPECTED = Area.Source.POLICE
+  val FLAG_SOURCE_INVALID = "SOMEOTHER"
   val FLAG_CLEAR = "--clear"
   val FLAG_ONE = "--one"
   val FLAG_MANY = "--many"

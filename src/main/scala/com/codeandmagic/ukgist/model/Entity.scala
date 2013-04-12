@@ -17,19 +17,12 @@
  along with UKGist.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.codeandmagic.ukgist.schema
-
-import org.orbroker.config.TokenSet
-import org.orbroker.Token
+package com.codeandmagic.ukgist.model
 
 /**
  * User: cvrabie
- * Date: 23/03/2013
+ * Date: 12/04/2013
  */
-
-object PoliceAreaSchemaTokens extends TokenSet(true) {
-  val getById = Token('kmlAreaGetById, PoliceAreaExtractor)
-  val listAll = Token('kmlAreaListAll, PoliceAreaExtractor)
-  val deleteByType = Token[Int]('kmlAreaDeleteByType)
-  val saveAll = Token[Int]('kmlAreaSaveAll)
+abstract class Entity(val id:Long) {
+  def copyWithId(newId: Long):Entity
 }

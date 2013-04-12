@@ -26,5 +26,11 @@ import com.codeandmagic.ukgist.util.KmlUtils
  * User: cvrabie
  * Date: 27/03/2013
  */
-class KmlPolygonArea(override val id:Long, override val name:String, override val kind:Area.Kind.Value, val kml:Kml)
-  extends PolygonArea(id,name,kind,KmlUtils.kmlPolygonToJtsPolygon(kml))
+class KmlPolygonArea(override val id:Long,
+                          override val name:String,
+                          override val source:Area.Source.Value,
+                          override val validity: Interval,
+                          val kml:Kml)
+  extends PolygonArea(id,name,source,validity,KmlUtils.kmlPolygonToJtsPolygon(kml)){
+  override def copyWithId(newId: Long):KmlPolygonArea = new KmlPolygonArea(newId, name, source, validity, kml)
+}

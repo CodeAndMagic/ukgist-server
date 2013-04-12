@@ -26,6 +26,8 @@ import java.io.File
 import scala.math._
 import net.liftweb.common.Loggable
 import com.codeandmagic.ukgist.model.{Area, KmlPolygonArea, Location, PolygonAreaFixture}
+import com.codeandmagic.ukgist.model.Interval.FOREVER
+import scala.collection.JavaConversions.asScalaBuffer
 
 /**
  * User: cvrabie
@@ -85,7 +87,7 @@ object AreaIndexFixture extends Mockito{
   val BIG_KMZ_PATH = "src/test/resources/big.kmz"
   val BIG_KMZ = Kml.unmarshalFromKmz(new File(BIG_KMZ_PATH))
   val BIG_AREAS = BIG_KMZ.zipWithIndex.map( _ match {
-    case (kml,i)=> new KmlPolygonArea(i,""+i,Area.Kind.POLICE,kml)
+    case (kml,i)=> new KmlPolygonArea(i,""+i,Area.Source.POLICE,FOREVER,kml)
   })
   val LONDON_1_INDEX = 742
   val (latMin, lngMin, latMax, lngMax) = (50.828106, -4.441416, 58.315364, 0.896581)

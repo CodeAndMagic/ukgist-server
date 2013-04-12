@@ -29,11 +29,12 @@ import com.codeandmagic.ukgist.model.Area.BoundingBox
 /**
  * Defines a grouping for statistics, usually geographic.
  */
-abstract case class Area(
-  val id: Long,
+abstract class Area(
+  override val id: Long,
   val name: String,
-  val kind: Area.Kind.Value
-){
+  val source: Area.Source.Value,
+  val validity: Interval
+) extends Entity(id){
   /**
    * * Minimum Bounding Rectangle (MBR). Basically Latitude and Longitude MIN and MAX values.
    * Used for quick calculations, like checking if the area DOES NOT contain a Location.
@@ -61,10 +62,10 @@ abstract case class Area(
 
 object Area{
   /**
-   * Area kind is usually defined by where the area is used.
+   * Area source is usually defined by where the area is used.
    * For example police crime data have their own list of areas.
    */
-  object Kind extends Enumeration{
+  object Source extends Enumeration{
     val OTHER, POLICE = Value
     val CSV = values.head.toString +
       values.takeRight(values.size-1).foldLeft(new StringBuilder)((sb,at)=>sb.append(", ").append(at.toString)).toString
@@ -82,7 +83,7 @@ trait AreaDao[T<:Area]{
    * @param t
    * @return the number of deleted items
    */
-  def deleteByType(t:Area.Kind.Value):Int
+  def deleteByType(t:Area.Source.Value):Int
 
   /**
    * Fetches from the database the area with the specified id.

@@ -21,25 +21,32 @@ package com.codeandmagic.ukgist.schema
 
 import org.orbroker.{Row, RowExtractor}
 import de.micromata.opengis.kml.v_2_2_0.Kml
-import com.codeandmagic.ukgist.util.{KmlUtils, InvalidKmlException}
-import com.codeandmagic.ukgist.model.{Area, PolygonArea}
+import com.codeandmagic.ukgist.util.InvalidKmlException
+import com.codeandmagic.ukgist.model.{PoliceArea, Interval, KmlPolygonArea, Area}
+import org.joda.time.DateTime
 
 /**
  * User: cvrabie
  * Date: 23/03/2013
  * RowExtractor that extracts a [[com.codeandmagic.ukgist.model.PolygonArea]] stored using a KML
  */
-object KmlPolygonAreaExtractor extends RowExtractor[PolygonArea]{
-  def extract(row: Row) = new PolygonArea(
+object PoliceAreaExtractor extends RowExtractor[PoliceArea]{
+  def extract(row: Row) = new PoliceArea(
     row.bigInt("id").get,
     row.string("name").get,
-    row.smallInt("kind").map(Area.Kind(_)).get,
+    row.smallInt("source").map(Area.Source(_)).get,
+    new Interval(
+      row.timestamp("validity_start").map(new DateTime(_)),
+      row.timestamp("validity_end").map(new DateTime(_))
+    ),
     row.binaryStream("kml") match {
       case Some(is) => Kml.unmarshal(is) match {
-        case kml:Kml => KmlUtils.kmlPolygonToJtsPolygon(kml)
+        case kml:Kml => kml
         case _ => throw new InvalidKmlException("Blob could not be deserialized to KML.")
       }
       case _ => throw new InvalidKmlException("This area doesn't seem to have a valid KML blob.")
-    }
+    },
+    row.string("police_force").get,
+    row.string("police_neighborhood").get
   )
 }

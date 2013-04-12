@@ -19,7 +19,7 @@
 
 package com.codeandmagic.ukgist.model
 
-import com.codeandmagic.ukgist.schema.{KmlAreaSchemaTokens, ORBrokerHelper}
+import com.codeandmagic.ukgist.schema.{PoliceAreaSchemaTokens, ORBrokerHelper}
 import com.vividsolutions.jts.geom.{Coordinate, Polygon}
 import com.codeandmagic.ukgist.model.Area.BoundingBox
 import com.codeandmagic.ukgist.util.GeometryUtils.{locationToGeometry,locationToCoordinate}
@@ -33,58 +33,26 @@ import org.orbroker.Transactional
  * Area defined by a polygon.
  * @param id
  * @param name
- * @param kind
+ * @param source
  * @param geometry
  */
-case class PolygonArea(
+class PolygonArea(
   override val id: Long,
   override val name: String,
-  override val kind:Area.Kind.Value,
+  override val source:Area.Source.Value,
+  override val validity: Interval,
   val geometry: Polygon
 )
-extends Area(id,name,kind){
+extends Area(id, name, source, validity){
 
   protected val bb = geometry.getEnvelopeInternal
   val boundingBox = new BoundingBox(bb.getMinX, bb.getMinY, bb.getMaxX, bb.getMaxY)
 
   def containsMaybe(loc: Location) = bb.intersects(loc:Coordinate)
+
   def containsDefinitely(loc: Location) = geometry.intersects(loc)
 
+  override def copyWithId(newId: Long):PolygonArea = new PolygonArea(newId, name, source, validity, geometry)
 }
-
-object PolygonArea extends AreaDao[PolygonArea]{
-  def getById(id: Long) = ORBrokerHelper.broker.readOnly()(
-    _.selectOne(KmlAreaSchemaTokens.getById, "id"->id)
-  )
-
-  def listAll() = ORBrokerHelper.broker.readOnly()(
-    _.selectAll(KmlAreaSchemaTokens.listAll)
-  )
-
-  def deleteByType(t: Area.Kind.Value) = ORBrokerHelper.broker.transactional()(
-    _.execute(KmlAreaSchemaTokens.deleteByType, "t"->t)
-  )
-
-  def saveAll(areas: Seq[PolygonArea]) = ORBrokerHelper.broker.transactional()(saveAll(areas,_))
-
-  protected def saveAll(areas: Seq[PolygonArea], tx:Transactional):Seq[PolygonArea] = {
-    val keys = scala.collection.mutable.Seq[Int]()
-    val rollback = tx.makeSavepoint()
-    var ok = true
-    try{
-      tx.executeBatchForKeys(KmlAreaSchemaTokens.saveAll, ("area", areas)){ key:Int => keys :+ key }
-      val saved = (areas, keys).zipped.map((a:PolygonArea, i:Int) => a.copy(id=i))
-      saved.toSeq
-    }catch {
-      case e =>
-        ok = false
-        Seq.empty
-    }finally {
-      if (ok && keys.length == areas.length) tx.commit()
-      else tx.rollbackSavepoint(rollback)
-    }
-  }
-}
-
 
 

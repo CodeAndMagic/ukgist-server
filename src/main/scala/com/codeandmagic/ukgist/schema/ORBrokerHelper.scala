@@ -44,7 +44,7 @@ private[schema] object ORBrokerFactory{
     val brokerConfig = new BrokerConfig(dataSource)
     brokerConfig.setUser(dbUser, dbPass)
     FileSystemRegistrant(configFolder).register(brokerConfig)
-    brokerConfig.verify(KmlAreaSchemaTokens.idSet)
+    brokerConfig.verify(PoliceAreaSchemaTokens.idSet)
     Broker(brokerConfig)
   }) match {
     case Full(b) => b
