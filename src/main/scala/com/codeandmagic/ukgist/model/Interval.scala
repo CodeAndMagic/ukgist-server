@@ -18,7 +18,7 @@
  */
 
 package com.codeandmagic.ukgist.model
-import org.joda.time.{Interval => JodaInterval, DateTime, YearMonth}
+import org.joda.time.{Interval => JodaInterval, DateTime}
 import org.joda.time.format.DateTimeFormat
 import net.liftweb.util.Helpers.tryo
 
@@ -31,15 +31,30 @@ import net.liftweb.util.Helpers.tryo
  * Wrapper on the JodaTime Interval class
  */
 class Interval(val from:Option[DateTime], val to:Option[DateTime]) {
+  if(from.isDefined && to.isDefined && from.get.isAfter(to.get))
+    throw new IllegalArgumentException("FROM can't be after TO!")
   /**
    * Wrapped interval
    */
   //val interval: JodaInterval = new JodaInterval(from.getOrElse(Interval.MIN), to.getOrElse(Interval.MAX))
   def this(i1:Interval, i2:Interval) = this(i1.from, i2.to)
   def this(from:Option[DateTime], i:Interval) = this(from, i.to)
+  def this(from:DateTime, to:DateTime) = this(Some(from),Some(to))
   def this(i:Interval, to:Option[DateTime]) = this(i.from, to)
 
   private lazy val asString = from + "/" + to
+
+  override def equals(p1: Any) = p1 match {
+    case i:Interval => (from,to,i.from,i.to) match {  //important because DateTime equals does not work as expected
+      case (Some(f1),Some(t1),Some(f2),Some(t2)) if f1.isEqual(f2) && t1.isEqual(t2) => true
+      case (Some(f1),None,Some(f2),None) if f1.isEqual(f2) => true
+      case (None, Some(t1), None, Some(t2)) if t1.isEqual(t2) => true
+      case (None,None,None,None) => true
+      case _ => false
+    }
+    case _ => false
+  }
+
   override def toString = asString
 }
 
@@ -51,7 +66,7 @@ object Interval extends IntervalFactory[Interval]{
   //val MIN = new DateTime(0L)
   //val MAX = new DateTime(4294967295L)
 
-  def unapply(str: String) = str.trim.split("/",2).toList match {
+  def unapply(str: String):Option[Interval] = str.trim.split("/",2).toList match {
     case "" :: Nil => Some(FOREVER)
 
     case DayInterval(d) :: Nil => Some(d)
@@ -71,13 +86,17 @@ object Interval extends IntervalFactory[Interval]{
     case _ => None
   }
 
+  def unapply(i:Interval):Option[(Option[DateTime],Option[DateTime])] = Some((i.from, i.to))
+
   object FOREVER extends Interval(None,None)
 }
 
 class DayInterval(dt:DateTime) extends Interval(
   Some(dt.withTimeAtStartOfDay()),
   Some(dt.withTimeAtStartOfDay().plusDays(1))
-)
+){
+  def this(year:Int, month:Int, day:Int) = this(new DateTime(year,month,day,0,0))
+}
 
 object DayInterval extends IntervalFactory[DayInterval]{
   val format = DateTimeFormat.forPattern("yyyy-MM-dd").withZoneUTC()
@@ -87,7 +106,9 @@ object DayInterval extends IntervalFactory[DayInterval]{
 class MonthInterval(dt:DateTime) extends Interval(
   Some(dt.withDayOfMonth(1).withTimeAtStartOfDay()),
   Some(dt.withDayOfMonth(1).withTimeAtStartOfDay().plusMonths(1))
-)
+){
+  def this(year:Int, month:Int) = this(new DateTime(year,month,1,0,0))
+}
 
 object MonthInterval extends IntervalFactory[MonthInterval]{
   val format = DateTimeFormat.forPattern("yyyy-MM").withZoneUTC()
@@ -97,7 +118,9 @@ object MonthInterval extends IntervalFactory[MonthInterval]{
 class YearInterval(dt:DateTime) extends Interval(
   Some(dt.withDayOfYear(1).withTimeAtStartOfDay()),
   Some(dt.withDayOfYear(1).withTimeAtStartOfDay().plusYears(1))
-)
+){
+  def this(year:Int) = this(new DateTime(year,1,1,0,0))
+}
 
 object YearInterval extends IntervalFactory[YearInterval]{
   val format = DateTimeFormat.forPattern("yyyy").withZoneUTC()

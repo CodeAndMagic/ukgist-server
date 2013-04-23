@@ -21,10 +21,12 @@ package com.codeandmagic.ukgist.tools
 
 import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
-import com.codeandmagic.ukgist.model.{PoliceArea, PolygonArea, AreaDao, Area}
+import com.codeandmagic.ukgist.model._
 import java.util.NoSuchElementException
 import java.io._
 import com.codeandmagic.ukgist.util.InvalidKmlException
+import com.codeandmagic.ukgist.util.InvalidKmlException
+import com.codeandmagic.ukgist.model.Interval.FOREVER
 
 /**
  * User: cvrabie
@@ -92,7 +94,22 @@ class PoliceKmlImportSpec extends Specification{
     }
 
     "provide empty string as default prefix if the --prefix flag is missing" in {
-      tool(PATH_DIR).PREFIX must beEqualTo("")
+      tool(PATH_DIR).PREFIX must_== ""
+    }
+  }
+
+  "PoliceKmlImport.VALID" should{
+    "correctly read the --valid argument" in{
+      tool(FLAG_VALID, FLAG_VALID_STR, PATH_DIR).VALIDITY must beEqualTo(FLAG_VALID_VAL)
+    }
+    "throw InvalidArgumentException if the --valid parameter is missing" in{
+      tool(FLAG_VALID, PATH_DIR) must throwA(manifest[IllegalArgumentException])
+    }
+    "throw InvalidArgumentException if the --valid parameter is incorrect" in{
+      tool(FLAG_VALID, FLAG_VALID_WRONG, PATH_DIR) must throwA(manifest[IllegalArgumentException])
+    }
+    "provide FOREVER as default validity if the --valid flag is missing" in{
+      tool(PATH_DIR).VALIDITY must_== FOREVER
     }
   }
 
@@ -200,6 +217,10 @@ object PoliceKmlImportFixture extends Mockito{
   val FLAG_MANY = "--many"
   val FLAG_PREFIX = "--prefix"
   val FLAG_PREFIX_VAL = "abcd"
+  val FLAG_VALID = "--valid"
+  val FLAG_VALID_STR = "2012-12/2013-01"
+  val FLAG_VALID_VAL = new Interval(new MonthInterval(2012,12), new MonthInterval(2013,1))
+  val FLAG_VALID_WRONG = "2012-12-01/2013-20-01"
   val FILE_KML = "city-of-london-ce"
   val PATH_KML = "src/test/resources/"+FILE_KML+".kml"
   val BROKEN_KML_PATH = "src/test/resources/broken.kml"

@@ -29,6 +29,14 @@ import org.joda.time.{DateTimeZone, DateTime}
 class IntervalSpec extends Specification{
   def d(year:Int, month:Int, day:Int) = Some(new DateTime(year,month,day,0,0,0,DateTimeZone.UTC))
 
+  "Interval" should{
+    "have TO>FROM" in{
+      new Interval(new DateTime(2012,02,01,0,0), new DateTime(2012,01,01,0,0)) must throwA(manifest[IllegalArgumentException])
+    }
+  }
+
+  // UNAPPLY
+
   "Interval('2012-10-24')" should{
     "have a start date of 2012-10-24T00:00" in{
       Interval.unapply("2012-10-24") must beSome.which(_.from == d(2012,10,24))
@@ -222,6 +230,55 @@ class IntervalSpec extends Specification{
   "Interval('2000-01-02-2004-03-04')" should{ //no weird separator
     "be None" in{
       Interval.unapply("2000-01-02-2004-03-04") must beNone
+    }
+  }
+
+  // EQUALITY
+
+  "YearInterval(2012)" should{
+    val interval = new YearInterval(2012)
+    val from = Some(new DateTime(2012,1,1,0,0))
+    val to = Some(new DateTime(2013,1,1,0,0))
+    val whatever = Some(new DateTime(2013,1,2,0,0))
+    "be equal to itself" in{
+      interval must_== new YearInterval(2012)
+    }
+    "be equal to Interval('2012-01-01','2013-01-01')" in{
+      interval must_== new Interval(from,to)
+    }
+    "not be equals to Interval('2012-01-01','2013-01-02')" in{
+      interval must_!= new Interval(from,whatever)
+    }
+  }
+
+  "YearInterval(2012/)" should{
+    val interval = new Interval(new YearInterval(2012), None)
+    val from = Some(new DateTime(2012,1,1,0,0))
+    val to = None
+    val whatever = Some(new DateTime(2013,1,1,0,0))
+    "be equal to itself" in{
+      interval must_== new Interval(new YearInterval(2012), None)
+    }
+    "be equal to Interval('2012-01-01',None)" in{
+      interval must_== new Interval(from,to)
+    }
+    "not be equals to Interval('2012-01-01','2013-01-01')" in{
+      interval must_!= new Interval(from,whatever)
+    }
+  }
+
+  "Interval(2012-12/2013-01)" should{
+    "be equal to new Interval(new MonthInterval(2012,12), new MonthInterval(2013,1))" in{
+      Interval.unapply("2012-12/2013-01") must beSome.which(_ == new Interval(new MonthInterval(2012,12), new MonthInterval(2013,1)))
+    }
+  }
+
+  "FOREVER" should{
+    "be equal to itself" in{
+      Interval.FOREVER must_== Interval.FOREVER
+    }
+    "be equal to Interval('2012-01-01','2013-01-01')" in{
+      Interval.FOREVER must_!= new Interval(new DateTime(2012,1,1,0,0),new DateTime(2013,1,1,0,0))
     }
   }
 }
