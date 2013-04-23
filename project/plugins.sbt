@@ -11,12 +11,6 @@
 //You should have received a copy of the GNU General Public License
 //along with UKGist.  If not, see <http://www.gnu.org/licenses/>.
 
-resolvers ++= Seq(
-	"Web plugin repo" at "http://siasia.github.com/maven2",	
-    "moved-scala-tools-releases" at "https://oss.sonatype.org/content/groups/scala-tools/",
-    "moved-scala-tools-snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
-)
-
 //Following means libraryDependencies += "com.github.siasia" %% "xsbt-web-plugin" % "0.1.1-<sbt version>""
 //libraryDependencies <+= sbtVersion(v => "com.github.siasia" %% "xsbt-web-plugin" % (v+"-0.2.10"))
 

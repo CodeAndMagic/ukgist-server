@@ -26,6 +26,7 @@ version := "0.1-SNAPSHOT"
 crossPaths := false
 
 resolvers ++= Seq(
+    "Web plugin repo" at "http://siasia.github.com/maven2",
     "moved-scala-tools-releases" at "https://oss.sonatype.org/content/groups/scala-tools/",
     "moved-scala-tools-snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
     "snapshots-repo" at "http://scala-tools.org/repo-snapshots",

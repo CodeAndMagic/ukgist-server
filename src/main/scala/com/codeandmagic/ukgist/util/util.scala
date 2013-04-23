@@ -17,13 +17,10 @@
  along with UKGist.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.codeandmagic.ukgist.model
+package com.codeandmagic.ukgist
 
-/**
- * User: cvrabie
- * Date: 12/04/2013
- */
-abstract class Entity(val id:Long) {
-  def copyWithId(newId: Long):Entity
-  def clazz = getClass.hashCode()
+import net.liftweb.common.Logger
+
+package object util{
+  def withV[T](v: T)(f:(T)=>Any):T = { f(v); v }
 }

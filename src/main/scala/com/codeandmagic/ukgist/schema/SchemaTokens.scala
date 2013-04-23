@@ -21,6 +21,7 @@ package com.codeandmagic.ukgist.schema
 
 import org.orbroker.config.TokenSet
 import org.orbroker.Token
+import org.orbroker.conv.JodaDateTimeConv
 
 /**
  * User: cvrabie
@@ -31,5 +32,5 @@ object PoliceAreaSchemaTokens extends TokenSet(true) {
   val policeAreaGetById = Token('policeAreaGetById, PoliceAreaExtractor)
   val policeAreaListAll = Token('policeAreaListAll, PoliceAreaExtractor)
   val policeAreaDeleteByType = Token[Int]('policeAreaDeleteByType)
-  val policeAreaSaveAll = Token[Int]('policeAreaSaveAll)
+  val policeAreaSaveAll = Token[Long]('policeAreaSaveAll, JodaDateTimeConv, AreaSourceConv, KmlConv)
 }

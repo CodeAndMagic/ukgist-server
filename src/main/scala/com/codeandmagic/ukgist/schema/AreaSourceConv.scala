@@ -17,13 +17,26 @@
  along with UKGist.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.codeandmagic.ukgist.model
+package com.codeandmagic.ukgist.schema
+
+import org.orbroker.conv.ParmConverter
+import com.codeandmagic.ukgist.model.Area
+import de.micromata.opengis.kml.v_2_2_0.Kml
+import com.codeandmagic.ukgist.util.withV
+import java.io.ByteArrayOutputStream
 
 /**
  * User: cvrabie
- * Date: 12/04/2013
+ * Date: 23/04/2013
  */
-abstract class Entity(val id:Long) {
-  def copyWithId(newId: Long):Entity
-  def clazz = getClass.hashCode()
+object AreaSourceConv extends ParmConverter{
+  type T = Area.Source.Value
+  val fromType = classOf[T]
+  def toJdbcType(t: T) = t.id
+}
+
+object KmlConv extends ParmConverter{
+  type T = Kml
+  val fromType = classOf[T]
+  def toJdbcType(t: KmlConv.T) = withV(new ByteArrayOutputStream)(t.marshal(_)).toByteArray
 }
