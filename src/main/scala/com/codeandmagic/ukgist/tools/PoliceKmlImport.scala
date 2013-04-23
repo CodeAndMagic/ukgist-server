@@ -26,12 +26,13 @@ import java.io.{FileFilter, File}
 import net.liftweb.util.Helpers.tryo
 import de.micromata.opengis.kml.v_2_2_0.Kml
 import scala.Some
+import net.liftweb.common.Logger
 
 /**
  * User: cvrabie
  * Date: 26/03/2013
  */
-object PoliceKmlImport extends App{
+object PoliceKmlImport extends App {
   override def main(args: Array[String]) {
     super.main(args)
     new PoliceKmlTool(args:_*).apply()
@@ -41,7 +42,7 @@ object PoliceKmlImport extends App{
  * Tool that inserts into the database [[com.codeandmagic.ukgist.model.PolygonArea]]s based on the KML files
  * provided by the Police Data website http://www.police.uk/data
  */
-class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
+class PoliceKmlTool(override val args:String*) extends Tool(args:_*) with Logger{
   val REQUIRED_PARAMETERS = 1
 
   if (args.contains("--one") && args.contains("--many"))
@@ -117,7 +118,9 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
   def execute(){
     if(CLEAR) clear()
     val areas = if(ONE) readOne()::Nil else readMany()
-    writeAll(areas)
+    info("Imported %d areas".format(areas.length))
+    val saved = writeAll(areas)
+    info("Wrote %d areas to database".format(saved.length))
   }
 
   val MSG_CLEAR_QUESTION="Are you sure you want to clear the database? [y/n]: "
@@ -145,17 +148,21 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*){
     val basename = file.nameWithoutExtension
     val name = PREFIX + path + dash + basename
     val policeForce = breadcrumb.lastOption.getOrElse("")
+    info("Reading %s".format(file.getAbsolutePath))
     new PoliceArea(-1, name, SOURCE, VALIDITY, Kml.unmarshal(file),policeForce,basename)
   }
 
   def readMany():Seq[PoliceArea] = readMany(PATH, Nil)
 
-  protected def readMany(dir:File, breadcrumb:Seq[String]):Seq[PoliceArea] = dir.listFiles().toSeq.flatMap(file => {
-    val newBreadcrumb = breadcrumb :+ dir.getName
-    if (file.isDirectory) readMany(file,newBreadcrumb)
-    else if (file.extension==KML_EXTENSION) tryo{ readOne(file,newBreadcrumb) }.toSeq
+  protected def readMany(dir:File, breadcrumb:Seq[String]):Seq[PoliceArea] = {
+    info("Opening dir %s".format(dir.getAbsolutePath))
+    dir.listFiles().toSeq.flatMap(file => {
+      val newBreadcrumb = breadcrumb :+ dir.getName
+      if (file.isDirectory) readMany(file,newBreadcrumb)
+      else if (file.extension==KML_EXTENSION) tryo{ readOne(file,newBreadcrumb) }.toSeq
       else Seq()
-  })
+    })
+  }
 
   def writeAll(areas:Seq[PoliceArea]) = areaDao.saveAll(areas)
 }
