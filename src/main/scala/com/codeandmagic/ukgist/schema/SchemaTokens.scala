@@ -28,8 +28,8 @@ import org.orbroker.Token
  */
 
 object PoliceAreaSchemaTokens extends TokenSet(true) {
-  val getById = Token('kmlAreaGetById, PoliceAreaExtractor)
-  val listAll = Token('kmlAreaListAll, PoliceAreaExtractor)
-  val deleteByType = Token[Int]('kmlAreaDeleteByType)
-  val saveAll = Token[Int]('kmlAreaSaveAll)
+  val policeAreaGetById = Token('policeAreaGetById, PoliceAreaExtractor)
+  val policeAreaListAll = Token('policeAreaListAll, PoliceAreaExtractor)
+  val policeAreaDeleteByType = Token[Int]('policeAreaDeleteByType)
+  val policeAreaSaveAll = Token[Int]('policeAreaSaveAll)
 }

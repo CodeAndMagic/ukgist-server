@@ -31,3 +31,5 @@ libraryDependencies <+= sbtVersion(v => v match {
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.6.0")
 //libraryDependencies += "net.virtual-void" % "sbt-dependency-graph" % "0.6.0"
 
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.8")
+

@@ -11,6 +11,10 @@
 //You should have received a copy of the GNU General Public License
 //along with UKGist.  If not, see <http://www.gnu.org/licenses/>.
 
+import AssemblyKeys._ // put this at the top of the file
+
+seq(assemblySettings :_*)
+
 seq(webSettings :_*)
 
 organization := "com.codeandmagic"
@@ -38,7 +42,7 @@ libraryDependencies ++= Seq(
   "de.micromata.jak" % "JavaAPIforKml" % "2.2.0-SNAPSHOT" % "compile",
   "com.vividsolutions" % "jts" % "1.13" % "compile",
   "org.orbroker" % "orbroker_2.9.2" % "3.2.1-1" % "compile",
-  "mysql" % "mysql-connector-java" % "5.1.18" % "container",
+  "mysql" % "mysql-connector-java" % "5.1.24" % "compile",
   "org.eclipse.jetty" % "jetty-webapp" % "7.6.0.RC5" % "container",
   "org.eclipse.jetty" % "jetty-servlets" % "7.6.0.RC5" % "container",
   "org.specs2" %% "specs2" % "1.12.1" % "test",
@@ -70,3 +74,7 @@ testOptions := Seq(Tests.Filter(s =>
     s.matches("org.specs2.guide.*")))
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
+
+test in assembly := {}
+
+jarName in assembly := "ukgist-tools.jar"

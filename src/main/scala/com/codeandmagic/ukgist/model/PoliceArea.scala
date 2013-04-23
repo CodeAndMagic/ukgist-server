@@ -21,15 +21,15 @@ class PoliceArea(override val id:Long,
 
 object PoliceArea extends AreaDao[PoliceArea]{
   def getById(id: Long) = ORBrokerHelper.broker.readOnly()(
-    _.selectOne(PoliceAreaSchemaTokens.getById, "id"->id)
+    _.selectOne(PoliceAreaSchemaTokens.policeAreaGetById, "id"->id)
   )
 
   def listAll() = ORBrokerHelper.broker.readOnly()(
-    _.selectAll(PoliceAreaSchemaTokens.listAll)
+    _.selectAll(PoliceAreaSchemaTokens.policeAreaListAll)
   )
 
   def deleteByType(t: Area.Source.Value) = ORBrokerHelper.broker.transactional()(
-    _.execute(PoliceAreaSchemaTokens.deleteByType, "t"->t)
+    _.execute(PoliceAreaSchemaTokens.policeAreaDeleteByType, "t"->t)
   )
 
   def saveAll(areas: Seq[PoliceArea]) = ORBrokerHelper.broker.transactional()(saveAll(areas,_))
@@ -39,7 +39,7 @@ object PoliceArea extends AreaDao[PoliceArea]{
     val rollback = tx.makeSavepoint()
     var ok = true
     try{
-      tx.executeBatchForKeys(PoliceAreaSchemaTokens.saveAll, ("area", areas)){ key:Int => keys :+ key }
+      tx.executeBatchForKeys(PoliceAreaSchemaTokens.policeAreaSaveAll, ("area", areas)){ key:Int => keys :+ key }
       val saved = (areas, keys).zipped.map((a:PoliceArea, i:Int) => a.copyWithId(i))
       saved.toSeq
     }catch {
