@@ -25,7 +25,6 @@ import com.codeandmagic.ukgist.model._
 import java.util.NoSuchElementException
 import java.io._
 import com.codeandmagic.ukgist.util.InvalidKmlException
-import com.codeandmagic.ukgist.util.InvalidKmlException
 import com.codeandmagic.ukgist.model.Interval.FOREVER
 
 /**

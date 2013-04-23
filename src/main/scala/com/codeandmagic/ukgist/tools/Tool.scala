@@ -37,6 +37,8 @@ abstract class Tool(val args:String*){
     case _ => name.length
   })
 
+
+  val REQUIRED_PARAMETERS:Int
   def isArgumentParameter(i:Int) = i < args.length-REQUIRED_PARAMETERS-1 && !args(i+1).startsWith("--")
 
   def getArgumentParameter[T](ARG_NAME:String,deserializer:(String)=>T,default:T, extraMsg:String):T =
@@ -72,7 +74,6 @@ abstract class Tool(val args:String*){
     this
   }
 
-  val REQUIRED_PARAMETERS:Int
   val HELP_MESSAGE:String
   def help() = OUT.println(HELP_MESSAGE)
   def execute()
