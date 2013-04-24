@@ -1,1 +1,0 @@
-DELETE FROM areas where kind = :kind

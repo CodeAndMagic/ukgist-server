@@ -17,20 +17,10 @@
  along with UKGist.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.codeandmagic.ukgist.schema
-
-import org.orbroker.config.TokenSet
-import org.orbroker.Token
-import org.orbroker.conv.JodaDateTimeConv
+package org.orbroker
 
 /**
  * User: cvrabie
- * Date: 23/03/2013
+ * Date: 24/04/2013
  */
 
-object PoliceAreaSchemaTokens extends TokenSet(true) {
-  val policeAreaGetById = Token('policeAreaGetById, PoliceAreaExtractor)
-  val policeAreaListAll = Token('policeAreaListAll, PoliceAreaExtractor)
-  val policeAreaDeleteBySource = Token[Int]('policeAreaDeleteBySource, AreaSourceConv)
-  val policeAreaSaveAll = Token[Long]('policeAreaSaveAll, JodaDateTimeConv, AreaSourceConv, KmlConv)
-}
