@@ -19,27 +19,26 @@
 
 package com.codeandmagic.ukgist.schema
 
-import org.specs2.mutable.Specification
-import com.codeandmagic.ukgist.model.PolygonAreaFixture._
-import com.codeandmagic.ukgist.util.InvalidKmlException
+import org.specs2.mock.Mockito
+import org.orbroker.Row
+import com.codeandmagic.ukgist.model.{PoliceCrimeData, KmlPolygonArea}
+import java.sql.Timestamp
 
 /**
  * User: cvrabie
- * Date: 25/03/2013
+ * Date: 26/04/2013
  */
-class PoliceAreaExtractorSpec extends Specification{
+class PoliceCrimeDataExtractorSpec {
 
-  "KmlPolygonAreaExtractor" should{
+}
 
-    "correctly deserialize a valid KML" in{
-      val area = PoliceAreaExtractor.extract(LONDON_1_POLICE_ROW)
-      area.name must beEqualTo(LONDON_1_AREA_NAME)
-      area.geometry must beAPolygon(LONDON_1_KML_OUTER)
-    }
-
-    "throw an InvalidKmlException if the KML is invalid" in{
-      PoliceAreaExtractor.extract(BROKEN_ROW) must throwA(manifest[InvalidKmlException])
-    }
-
+object PoliceCrimeDataExtractorFixture extends Mockito{
+  val CRIME_1_ID = 2
+  val CRIME_1_ROW = {
+    val row = mock[Row]
+    row.bigInt("id") returns Some(CRIME_1_ID)
+    row.integer("discriminator") returns Some(PoliceCrimeData.discriminator)
+    //TODO rest of the fields
+    /* return */ row
   }
 }

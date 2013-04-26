@@ -37,15 +37,23 @@ import org.joda.time.DateTime
  */
 object PolygonAreaFixture extends Mockito{
   implicit def strToIs(path:String) = new FileInputStream(path)
-  def mockBrokerRow(id:Long, name:String, SOURCE:Area.Source.Value, is:FileInputStream,
-                    from:DateTime, to:DateTime, force:String, neighborhood:String) = {
+  def mockKmlRow(id:Long, name:String, source:Area.Source.Value, is:FileInputStream,
+                    from:DateTime, to:DateTime) = {
     val row = mock[Row]
     row.bigInt("id") returns Some(id)
+    row.integer("discriminator") returns Some(KmlPolygonArea.discriminator)
     row.string("name") returns Some(name)
-    row.smallInt("source") returns Some(LONDON_1_AREA_SOURCE.id.toShort)
+    row.smallInt("source") returns Some(source.id.toShort)
     row.timestamp("validity_start") returns Some(new Timestamp(from.getMillis))
     row.timestamp("validity_end") returns Some(new Timestamp(to.getMillis))
     row.binaryStream("kml") returns Some(is)
+    /*return*/ row
+  }
+
+  def mockPoliceRow(id:Long, name:String, source:Area.Source.Value, is:FileInputStream,
+                 from:DateTime, to:DateTime, force:String, neighborhood:String) = {
+    val row = mockKmlRow(id,name,source,is,from,to)
+    row.integer("discriminator") returns Some(PoliceArea.discriminator)
     row.string("police_force") returns Some(force)
     row.string("police_neighborhood") returns Some(neighborhood)
     /*return*/ row
@@ -61,14 +69,15 @@ object PolygonAreaFixture extends Mockito{
   val LONDON_1_TO = new DateTime().plusMonths(3)
   val LONDON_1_FORCE = "London"
   val LONDON_1_NEIGHBORHOOD = "City1"
-  val LONDON_1_KML_ROW = mockBrokerRow(1,LONDON_1_AREA_NAME,LONDON_1_AREA_SOURCE,LONDON_1_KML_PATH,LONDON_1_FROM,LONDON_1_TO,LONDON_1_FORCE,LONDON_1_NEIGHBORHOOD)
+  val LONDON_1_POLICE_ROW = mockPoliceRow(1,LONDON_1_AREA_NAME,LONDON_1_AREA_SOURCE,LONDON_1_KML_PATH,LONDON_1_FROM,LONDON_1_TO,LONDON_1_FORCE,LONDON_1_NEIGHBORHOOD)
+  val LONDON_1_KML_ROW = mockKmlRow(1,LONDON_1_AREA_NAME,LONDON_1_AREA_SOURCE,LONDON_1_KML_PATH,LONDON_1_FROM,LONDON_1_TO)
   val LONDON_1_LOCATION_INSIDE_CONVEX_PART = new Location(51.512979, -0.078002)
   val LONDON_1_LOCATION_INSIDE_CONCAVE_PART = new Location(51.509842, -0.075439)
   val LONDON_1_LOCATION_OUTSIDE_CONVEX_PART = new Location(51.515513, -0.074154)
   val LONDON_1_LOCATION_OUTSIDE_CONCAVE_PART = new Location(51.511710, -0.081626)
   val LONDON_1_LOCATION_OUTSIDE_BOX = new Location(51.514372, -0.070852)
   val BROKEN_KML_PATH = "src/test/resources/broken.kml"
-  val BROKEN_ROW = mockBrokerRow(1,LONDON_1_AREA_NAME,LONDON_1_AREA_SOURCE,BROKEN_KML_PATH, LONDON_1_FROM, LONDON_1_TO,LONDON_1_FORCE, LONDON_1_NEIGHBORHOOD)
+  val BROKEN_ROW = mockPoliceRow(1,LONDON_1_AREA_NAME,LONDON_1_AREA_SOURCE,BROKEN_KML_PATH, LONDON_1_FROM, LONDON_1_TO,LONDON_1_FORCE, LONDON_1_NEIGHBORHOOD)
 
   class KmlPolygonMatcher(
      expectedOuterCoordinates:Seq[Double],

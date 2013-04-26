@@ -19,27 +19,26 @@
 
 package com.codeandmagic.ukgist.schema
 
-import org.specs2.mutable.Specification
-import com.codeandmagic.ukgist.model.PolygonAreaFixture._
-import com.codeandmagic.ukgist.util.InvalidKmlException
+import scala.collection.mutable
+import com.codeandmagic.ukgist.model.Companion
 
 /**
  * User: cvrabie
- * Date: 25/03/2013
+ * Date: 24/04/2013
  */
-class PoliceAreaExtractorSpec extends Specification{
+trait Discriminator{
+  this:Companion[_] =>
+  val manifest:Manifest[_]
+  val discriminator:Int = Discriminator(this)
+}
 
-  "KmlPolygonAreaExtractor" should{
+object Discriminator{
+  val values = new mutable.HashMap[Int,Discriminator]() with mutable.SynchronizedMap[Int,Discriminator]
 
-    "correctly deserialize a valid KML" in{
-      val area = PoliceAreaExtractor.extract(LONDON_1_POLICE_ROW)
-      area.name must beEqualTo(LONDON_1_AREA_NAME)
-      area.geometry must beAPolygon(LONDON_1_KML_OUTER)
-    }
-
-    "throw an InvalidKmlException if the KML is invalid" in{
-      PoliceAreaExtractor.extract(BROKEN_ROW) must throwA(manifest[InvalidKmlException])
-    }
-
+  def apply(d:Discriminator) = {
+    val id = d.getClass.getName.hashCode
+    values += ((id,d))
+    /*return*/ id
   }
+  def findByDiscriminator(id:Int) = values.get(id)
 }

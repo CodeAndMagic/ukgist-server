@@ -19,20 +19,21 @@
 
 package com.codeandmagic.ukgist.model
 
-import org.orbroker.RowExtractor
+import com.codeandmagic.ukgist.schema.{InformationExtractor, PoliceCrimeDataExtractor, Discriminator}
 
 /**
  * User: cvrabie
- * Date: 12/04/2013
+ * Date: 24/04/2013
  */
-abstract class Entity(val id:Long) {
-  def companion:Companion[_<:Entity]
-  def copyWithId(newId: Long):Entity
+class Information(override val id:Long, val discriminator:Int, val areaId:Area, val validity:Interval) extends Entity(id){
+  def copyWithId(newId: Long) = new Information(newId, discriminator, areaId, validity)
+  def companion:Companion[_<:Information] = Information
 }
 
-trait Companion[+T]
+object Information extends Companion[Information] with Persistent[Information]{
+  def extractor = InformationExtractor
+}
 
-trait Persistent[T]{
-  this:Companion[T] =>
-  def extractor:RowExtractor[T]
+abstract class InformationExtension(override val id:Long, val information:Information, val area:Area) extends Entity(id){
+  def companion:Companion[_<:InformationExtension]
 }

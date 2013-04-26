@@ -20,6 +20,7 @@
 package com.codeandmagic.ukgist.model
 
 import com.codeandmagic.ukgist.model.Area.BoundingBox
+import com.codeandmagic.ukgist.schema.{PoliceAreaExtractor, Discriminator}
 
 /**
  * User: cvrabie
@@ -34,7 +35,8 @@ abstract class Area(
   val name: String,
   val source: Area.Source.Value,
   val validity: Interval
-) extends Entity(id){
+) extends Entity(id) {
+
   /**
    * * Minimum Bounding Rectangle (MBR). Basically Latitude and Longitude MIN and MAX values.
    * Used for quick calculations, like checking if the area DOES NOT contain a Location.
@@ -58,6 +60,8 @@ abstract class Area(
    * @return TRUE is this area contains loc. FALSE otherwise.
    */
   def containsDefinitely(loc:Location):Boolean
+
+  def companion:Companion[_<:Area]
 }
 
 object Area{
@@ -100,4 +104,3 @@ trait AreaDao[T<:Area]{
 
   def saveAll(areas:Seq[T]):Seq[T]
 }
-

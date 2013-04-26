@@ -19,7 +19,7 @@
 
 package com.codeandmagic.ukgist.model
 
-import com.codeandmagic.ukgist.schema.{PoliceAreaSchemaTokens, ORBrokerHelper}
+import com.codeandmagic.ukgist.schema.{Discriminator, PoliceAreaSchemaTokens, ORBrokerHelper}
 import com.vividsolutions.jts.geom.{Coordinate, Polygon}
 import com.codeandmagic.ukgist.model.Area.BoundingBox
 import com.codeandmagic.ukgist.util.GeometryUtils.{locationToGeometry,locationToCoordinate}
@@ -45,7 +45,10 @@ class PolygonArea(
 )
 extends Area(id, name, source, validity){
 
+  def companion:Companion[_<:PolygonArea] = PolygonArea
+
   protected val bb = geometry.getEnvelopeInternal
+
   val boundingBox = new BoundingBox(bb.getMinX, bb.getMinY, bb.getMaxX, bb.getMaxY)
 
   def containsMaybe(loc: Location) = bb.intersects(loc:Coordinate)
@@ -53,6 +56,10 @@ extends Area(id, name, source, validity){
   def containsDefinitely(loc: Location) = geometry.intersects(loc)
 
   override def copyWithId(newId: Long):PolygonArea = new PolygonArea(newId, name, source, validity, geometry)
+}
+
+object PolygonArea extends Companion[PolygonArea] with Discriminator{
+  val manifest = manifest[PolygonArea]
 }
 
 

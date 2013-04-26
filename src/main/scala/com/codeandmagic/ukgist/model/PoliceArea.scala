@@ -1,7 +1,7 @@
 package com.codeandmagic.ukgist.model
 
 import de.micromata.opengis.kml.v_2_2_0.Kml
-import com.codeandmagic.ukgist.schema.{PoliceAreaSchemaTokens, ORBrokerHelper}
+import com.codeandmagic.ukgist.schema.{Discriminator, PoliceAreaExtractor, PoliceAreaSchemaTokens, ORBrokerHelper}
 import org.orbroker.Transaction
 import net.liftweb.common.Logger
 import scala.collection.mutable
@@ -18,6 +18,9 @@ class PoliceArea(override val id:Long,
                  val policeForce:String,
                  val neighborhood:String)
   extends KmlPolygonArea(id,name,source,validity,kml){
+
+  override def companion:Companion[_<:PoliceArea] = PoliceArea
+
   override def copyWithId(newId: Long):PoliceArea = new PoliceArea(newId, name, source, validity, kml, policeForce, neighborhood)
 }
 
@@ -54,6 +57,7 @@ trait PoliceAreaDao extends AreaDao[PoliceArea] with Logger{
   }
 }
 
-object PoliceArea extends PoliceAreaDao
-
-
+object PoliceArea extends Companion[PoliceArea] with Discriminator with Persistent[PoliceArea] with PoliceAreaDao{
+  val manifest = manifest[PoliceArea]
+  def extractor = PoliceAreaExtractor
+}

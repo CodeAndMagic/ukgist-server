@@ -21,6 +21,7 @@ package com.codeandmagic.ukgist.model
 
 import de.micromata.opengis.kml.v_2_2_0.Kml
 import com.codeandmagic.ukgist.util.KmlUtils
+import com.codeandmagic.ukgist.schema.{Discriminator, KmlAreaExtractor}
 
 /**
  * User: cvrabie
@@ -32,5 +33,11 @@ class KmlPolygonArea(override val id:Long,
                           override val validity: Interval,
                           val kml:Kml)
   extends PolygonArea(id,name,source,validity,KmlUtils.kmlPolygonToJtsPolygon(kml)){
+  override def companion:Companion[_<:KmlPolygonArea] = KmlPolygonArea
   override def copyWithId(newId: Long):KmlPolygonArea = new KmlPolygonArea(newId, name, source, validity, kml)
+}
+
+object KmlPolygonArea extends Companion[KmlPolygonArea] with Persistent[KmlPolygonArea] with Discriminator{
+  val manifest = manifest[KmlPolygonArea]
+  def extractor = KmlAreaExtractor
 }
