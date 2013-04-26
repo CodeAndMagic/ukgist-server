@@ -1,7 +1,7 @@
 package com.codeandmagic.ukgist.model
 
 import de.micromata.opengis.kml.v_2_2_0.Kml
-import com.codeandmagic.ukgist.schema.{Discriminator, PoliceAreaExtractor, PoliceAreaSchemaTokens, ORBrokerHelper}
+import com.codeandmagic.ukgist.schema.{PoliceAreaExtractor, PoliceAreaSchemaTokens, ORBrokerHelper}
 import org.orbroker.Transaction
 import net.liftweb.common.Logger
 import scala.collection.mutable
@@ -57,7 +57,7 @@ trait PoliceAreaDao extends AreaDao[PoliceArea] with Logger{
   }
 }
 
-object PoliceArea extends Companion[PoliceArea] with Discriminator with Persistent[PoliceArea] with PoliceAreaDao{
-  val manifest = manifest[PoliceArea]
+object PoliceArea extends Persistent[PoliceArea] with PoliceAreaDao{
+  val clazz = manifest[PoliceArea]
   def extractor = PoliceAreaExtractor
 }

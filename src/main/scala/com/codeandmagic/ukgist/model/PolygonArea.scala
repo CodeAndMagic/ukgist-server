@@ -19,11 +19,9 @@
 
 package com.codeandmagic.ukgist.model
 
-import com.codeandmagic.ukgist.schema.{Discriminator, PoliceAreaSchemaTokens, ORBrokerHelper}
 import com.vividsolutions.jts.geom.{Coordinate, Polygon}
 import com.codeandmagic.ukgist.model.Area.BoundingBox
 import com.codeandmagic.ukgist.util.GeometryUtils.{locationToGeometry,locationToCoordinate}
-import org.orbroker.Transactional
 
 /**
  * User: cvrabie
@@ -58,8 +56,8 @@ extends Area(id, name, source, validity){
   override def copyWithId(newId: Long):PolygonArea = new PolygonArea(newId, name, source, validity, geometry)
 }
 
-object PolygonArea extends Companion[PolygonArea] with Discriminator{
-  val manifest = manifest[PolygonArea]
+object PolygonArea extends Companion[PolygonArea]{
+  val clazz = manifest[PolygonArea]
 }
 
 

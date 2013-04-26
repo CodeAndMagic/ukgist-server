@@ -19,7 +19,7 @@
 
 package com.codeandmagic.ukgist.model
 
-import com.codeandmagic.ukgist.schema.{Discriminator, PoliceCrimeDataExtractor}
+import com.codeandmagic.ukgist.schema.PoliceCrimeDataExtractor
 
 /**
  * User: cvrabie
@@ -51,7 +51,7 @@ class PoliceCrimeData(
   def companion:Companion[_<:PoliceCrimeData] = PoliceCrimeData
 }
 
-object PoliceCrimeData extends Companion[PoliceCrimeData] with Persistent[PoliceCrimeData] with Discriminator{
+object PoliceCrimeData extends Persistent[PoliceCrimeData]{
   def extractor = PoliceCrimeDataExtractor
-  val manifest = manifest[PoliceCrimeData]
+  val clazz = manifest[PoliceCrimeData]
 }

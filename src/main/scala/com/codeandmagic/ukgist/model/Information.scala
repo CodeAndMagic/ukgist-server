@@ -19,7 +19,7 @@
 
 package com.codeandmagic.ukgist.model
 
-import com.codeandmagic.ukgist.schema.{InformationExtractor, PoliceCrimeDataExtractor, Discriminator}
+import com.codeandmagic.ukgist.schema.InformationExtractor
 
 /**
  * User: cvrabie
@@ -30,7 +30,8 @@ class Information(override val id:Long, val discriminator:Int, val areaId:Area, 
   def companion:Companion[_<:Information] = Information
 }
 
-object Information extends Companion[Information] with Persistent[Information]{
+object Information extends Persistent[Information]{
+  val clazz = manifest[Information]
   def extractor = InformationExtractor
 }
 

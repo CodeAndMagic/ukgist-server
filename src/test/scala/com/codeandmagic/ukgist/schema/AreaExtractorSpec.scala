@@ -23,13 +23,15 @@ import org.specs2.mutable.Specification
 import com.codeandmagic.ukgist.model.PolygonAreaFixture._
 import com.codeandmagic.ukgist.schema.PoliceCrimeDataExtractorFixture._
 import com.codeandmagic.ukgist.util.InvalidKmlException
-import com.codeandmagic.ukgist.model.{KmlPolygonArea, PoliceArea}
+import com.codeandmagic.ukgist.model.{Companion, KmlPolygonArea, PoliceArea}
+import org.specs2.mock.Mockito
+import org.orbroker.Row
 
 /**
  * User: cvrabie
  * Date: 25/04/2013
  */
-class AreaExtractorSpec extends Specification{
+class AreaExtractorSpec extends Specification with Mockito{
   //force class loading! This raises some questions about the implementation of the discriminator...
   PoliceArea.discriminator
   KmlPolygonArea.discriminator
@@ -54,8 +56,18 @@ class AreaExtractorSpec extends Specification{
       AreaExtractor.extract(BROKEN_ROW) must throwA(manifest[InvalidKmlException])
     }
 
-    "throw a CastException if this is a Discriminator for something else than an Area" in{
+    "throw a ClassCastException if this is a Discriminator for something else than an Area" in{
       AreaExtractor.extract(CRIME_1_ROW) must throwA[ClassCastException]
+    }
+
+    "throw a ClassCastException if this is a Discriminator that is not Persistent" in{
+      object SpecialArea extends Companion[PoliceArea]{
+        val clazz = manifest[PoliceArea]
+        val discriminator = 123
+        val row = mock[Row]
+        row.integer("discriminator") returns Some(123)
+        AreaExtractor.extract(row) must throwA[ClassCastException]
+      }
     }
   }
 }

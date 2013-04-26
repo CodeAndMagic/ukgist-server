@@ -20,6 +20,7 @@
 package com.codeandmagic.ukgist.model
 
 import org.orbroker.RowExtractor
+import scala.collection.mutable
 
 /**
  * User: cvrabie
@@ -30,9 +31,22 @@ abstract class Entity(val id:Long) {
   def copyWithId(newId: Long):Entity
 }
 
-trait Companion[+T]
+trait Companion[T]{
+  val clazz:Manifest[T]
+}
 
-trait Persistent[T]{
-  this:Companion[T] =>
+trait Persistent[T] extends Companion[T]{
+  val discriminator:Int = Discriminator(this)
   def extractor:RowExtractor[T]
+}
+
+object Discriminator{
+  val values = new mutable.HashMap[Int,Persistent[_]]() with mutable.SynchronizedMap[Int,Persistent[_]]
+
+  def apply(d:Persistent[_]) = {
+    val id = d.getClass.getName.hashCode
+    values += ((id,d))
+    /*return*/ id
+  }
+  def findByDiscriminator(id:Int) = values.get(id)
 }

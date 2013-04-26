@@ -20,7 +20,6 @@
 package com.codeandmagic.ukgist.model
 
 import com.codeandmagic.ukgist.model.Area.BoundingBox
-import com.codeandmagic.ukgist.schema.{PoliceAreaExtractor, Discriminator}
 
 /**
  * User: cvrabie

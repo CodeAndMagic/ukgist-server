@@ -75,7 +75,7 @@ object AreaExtractor extends RowExtractor[Area]{
   def extract(row: Row) = row.integer("discriminator") match {
     case Some(discriminator) => Discriminator.findByDiscriminator(discriminator) match {
       //some voodoo magic
-      case Some(instance:Persistent[_]) if instance.manifest <:< manifest[Area] =>
+      case Some(instance:Persistent[_]) if instance.clazz <:< manifest[Area] =>
         instance.asInstanceOf[Persistent[_<:Area]].extractor.extract(row)
       case _ => throw new ClassCastException(("Discriminator %d is unknown or not for an Area. Is the discriminator " +
         "stable and the class holding it loaded? Has the class name changed?").format(row.integer("discriminator").get))
