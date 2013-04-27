@@ -19,19 +19,15 @@
 
 package com.codeandmagic.ukgist
 
-import com.codeandmagic.ukgist.model.{PoliceArea, Location, MonthInterval}
-import net.liftweb.common.Loggable
-import net.liftweb.http.rest.RestHelper
+import com.codeandmagic.ukgist.dao.{ORBrokerFactory, BrokerComponent, BrokerPoliceAreaDaoComponent}
 
 /**
  * User: cvrabie
- * Date: 09/03/2013
+ * Date: 27/04/2013
+ * WHERE ALL THE MAGIC HAPPENDS
+ * @see CakePattern http://jonasboner.com/2008/10/06/real-world-scala-dependency-injection-di/
  */
-object UKGistRest extends RestHelper with Loggable{
-  serve {
-    //crime/32.000,-0.54/2013-01
-    case Get("crime" :: Location(loc) :: MonthInterval(mi) :: Nil, _) => <div><b>hello world!</b><p>{loc}</p>{mi}<p></p></div>
-
-    //case JsonGet("areas" :: Nil, _) => PoliceArea.listAll()
-  }
+object ComponentRegistry extends BrokerComponent with BrokerPoliceAreaDaoComponent{
+  val broker = ORBrokerFactory.fromProps()
+  val policeAreaDao = new BrokerPoliceAreaDao
 }

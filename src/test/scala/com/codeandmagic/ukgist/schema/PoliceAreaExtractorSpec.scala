@@ -21,6 +21,7 @@ package com.codeandmagic.ukgist.schema
 
 import org.specs2.mutable.Specification
 import com.codeandmagic.ukgist.model.PolygonAreaFixture._
+import com.codeandmagic.ukgist.dao._
 import com.codeandmagic.ukgist.util.InvalidKmlException
 
 /**
@@ -28,6 +29,11 @@ import com.codeandmagic.ukgist.util.InvalidKmlException
  * Date: 25/03/2013
  */
 class PoliceAreaExtractorSpec extends Specification{
+
+  object MockRegistry extends BrokerComponent with BrokerPoliceAreaDaoComponent{
+    val broker = ORBrokerFactory.apply("org.sqlite.JDBC","jdbc:sqlite:src/test/resources/sqlite/area_fixture.sqlite","","")
+    val policeAreaDao = new BrokerPoliceAreaDao
+  }
 
   "KmlPolygonAreaExtractor" should{
 
@@ -41,5 +47,13 @@ class PoliceAreaExtractorSpec extends Specification{
       PoliceAreaExtractor.extract(BROKEN_ROW) must throwA(manifest[InvalidKmlException])
     }
 
+  }
+
+  import MockRegistry._
+  "PoliceAreaDao" should{
+    "read the database" in{
+      val all = policeAreaDao.listAll()
+      all.size must be_==(1)
+    }
   }
 }

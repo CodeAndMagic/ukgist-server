@@ -27,6 +27,8 @@ import net.liftweb.util.Helpers.tryo
 import de.micromata.opengis.kml.v_2_2_0.Kml
 import scala.Some
 import net.liftweb.common.Logger
+import com.codeandmagic.ukgist.dao.PoliceAreaDao
+import com.codeandmagic.ukgist.ComponentRegistry
 
 /**
  * User: cvrabie
@@ -108,7 +110,7 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*) with Logger
       |--prefix: Prefix to be placed in front of the computed area name.
     """.stripMargin.format(PROGRAM_NAME,Area.Source.CSV,SOURCE_DEFAULT)
 
-  val areaDao:AreaDao[PoliceArea] = PoliceArea
+  val areaDao:PoliceAreaDao = ComponentRegistry.policeAreaDao
 
   override def apply():PoliceKmlTool = {
     super.apply()
@@ -133,7 +135,7 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*) with Logger
     OUT.println("\n")
     if (sure == 'y') {
       OUT.println(MSG_CLEAR_START.format(SOURCE))
-      areaDao.deleteByType(SOURCE)
+      areaDao.deleteBySource(SOURCE)
     }else{
       OUT.println(MSG_CLEAR_SKIPPED)
       throw new RuntimeException("Execution aborted")

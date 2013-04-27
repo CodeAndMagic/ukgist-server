@@ -40,22 +40,22 @@ object PolygonAreaFixture extends Mockito{
   def mockKmlRow(id:Long, name:String, source:Area.Source.Value, is:FileInputStream,
                     from:DateTime, to:DateTime) = {
     val row = mock[Row]
-    row.bigInt("id") returns Some(id)
-    row.integer("discriminator") returns Some(KmlPolygonArea.discriminator)
-    row.string("name") returns Some(name)
-    row.smallInt("source") returns Some(source.id.toShort)
-    row.timestamp("validity_start") returns Some(new Timestamp(from.getMillis))
-    row.timestamp("validity_end") returns Some(new Timestamp(to.getMillis))
-    row.binaryStream("kml") returns Some(is)
+    row.bigInt("area.id") returns Some(id)
+    row.integer("area.discriminator") returns Some(KmlPolygonArea.discriminator)
+    row.string("area.name") returns Some(name)
+    row.smallInt("area.source") returns Some(source.id.toShort)
+    row.timestamp("area.validity_start") returns Some(new Timestamp(from.getMillis))
+    row.timestamp("area.validity_end") returns Some(new Timestamp(to.getMillis))
+    row.binaryStream("area.kml") returns Some(is)
     /*return*/ row
   }
 
   def mockPoliceRow(id:Long, name:String, source:Area.Source.Value, is:FileInputStream,
                  from:DateTime, to:DateTime, force:String, neighborhood:String) = {
     val row = mockKmlRow(id,name,source,is,from,to)
-    row.integer("discriminator") returns Some(PoliceArea.discriminator)
-    row.string("police_force") returns Some(force)
-    row.string("police_neighborhood") returns Some(neighborhood)
+    row.integer("area.discriminator") returns Some(PoliceArea.discriminator)
+    row.string("area.police_force") returns Some(force)
+    row.string("area.police_neighborhood") returns Some(neighborhood)
     /*return*/ row
   }
 

@@ -26,6 +26,7 @@ import java.util.NoSuchElementException
 import java.io._
 import com.codeandmagic.ukgist.util.InvalidKmlException
 import com.codeandmagic.ukgist.model.Interval.FOREVER
+import com.codeandmagic.ukgist.dao.PoliceAreaDao
 
 /**
  * User: cvrabie
@@ -144,7 +145,7 @@ class PoliceKmlImportSpec extends Specification{
       t.clear()
       val expected = t.MSG_CLEAR_QUESTION+"\n\n"+(t.MSG_CLEAR_START.format(Area.Source.POLICE.toString))+"\n"
       t.OUTPUT.toString must beEqualTo(expected)
-      there was one(t.areaDao).deleteByType(any)
+      there was one(t.areaDao).deleteBySource(any)
     }
 
     "abort if the permission for clearing the database is not given" in{
@@ -152,7 +153,7 @@ class PoliceKmlImportSpec extends Specification{
       t.clear() must throwA(manifest[RuntimeException])
       val expected = t.MSG_CLEAR_QUESTION+"\n\n"+t.MSG_CLEAR_SKIPPED+"\n"
       t.OUTPUT.toString must beEqualTo(expected)
-      there was no(t.areaDao).deleteByType(any)
+      there was no(t.areaDao).deleteBySource(any)
     }
   }
 
@@ -195,7 +196,7 @@ object PoliceKmlImportFixture extends Mockito{
     new MockPoliceAreaTool(in,args:_*)
 
   class MockPoliceAreaTool(val in:InputStream, override val args:String*) extends PoliceKmlTool(args:_*){
-    override val areaDao = mock[AreaDao[PoliceArea]]
+    override val areaDao = mock[PoliceAreaDao]
     val OUTPUT = new ByteArrayOutputStream()
     override val OUT = new PrintStream(OUTPUT)
     override val IN =  in

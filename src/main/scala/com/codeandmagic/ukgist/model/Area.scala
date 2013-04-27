@@ -79,27 +79,3 @@ object Area{
     //lazy val max = new Coordinate(east,north)
   }
 }
-
-trait AreaDao[T<:Area]{
-  /**
-   * Deletes from the database all areas with the specified type.
-   * @param t
-   * @return the number of deleted items
-   */
-  def deleteByType(t:Area.Source.Value):Int
-
-  /**
-   * Fetches from the database the area with the specified id.
-   * @param id
-   * @return
-   */
-  def getById(id:Long):Option[T]
-
-  /**
-   * Fetches all the areas from the database.
-   * @return
-   */
-  def listAll():Seq[T]
-
-  def saveAll(areas:Seq[T]):Seq[T]
-}

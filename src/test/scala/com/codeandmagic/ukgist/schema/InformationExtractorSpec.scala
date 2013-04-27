@@ -17,21 +17,18 @@
  along with UKGist.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.codeandmagic.ukgist
+package com.codeandmagic.ukgist.schema
 
-import com.codeandmagic.ukgist.model.{PoliceArea, Location, MonthInterval}
-import net.liftweb.common.Loggable
-import net.liftweb.http.rest.RestHelper
+import org.specs2.mutable.Specification
 
 /**
  * User: cvrabie
- * Date: 09/03/2013
+ * Date: 27/04/2013
  */
-object UKGistRest extends RestHelper with Loggable{
-  serve {
-    //crime/32.000,-0.54/2013-01
-    case Get("crime" :: Location(loc) :: MonthInterval(mi) :: Nil, _) => <div><b>hello world!</b><p>{loc}</p>{mi}<p></p></div>
+class InformationExtractorSpec extends Specification{
+  "InformationExtractor" should{
+    "correctly extract an Information object" in{
 
-    //case JsonGet("areas" :: Nil, _) => PoliceArea.listAll()
+    }
   }
 }

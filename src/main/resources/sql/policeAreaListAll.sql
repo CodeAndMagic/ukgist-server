@@ -1,1 +1,1 @@
-SELECT * FROM areas a
+SELECT * FROM areas area

@@ -24,6 +24,7 @@ import org.specs2.mock.Mockito
 import org.orbroker.{Token, Transaction}
 import com.codeandmagic.ukgist.model.Interval.FOREVER
 import net.liftweb.common.Loggable
+import com.codeandmagic.ukgist.dao.{BrokerComponent, BrokerPoliceAreaDaoComponent}
 
 /**
  * User: cvrabie
@@ -49,9 +50,12 @@ class PoliceAreaSpec extends Specification with Mockito with Loggable{
   }
 }
 
-object PoliceAreaFixture extends Mockito{
+object PoliceAreaFixture extends Mockito with BrokerComponent with BrokerPoliceAreaDaoComponent{
 
-  val PA = new PoliceAreaDao {
+  val broker = null
+  val policeAreaDao = null
+
+  val PA = new BrokerPoliceAreaDao {
     def sv(areas: Seq[PoliceArea], tx: Transaction) = super.saveAll(areas, tx)
   }
 

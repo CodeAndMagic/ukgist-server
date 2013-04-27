@@ -21,9 +21,8 @@ package com.codeandmagic.ukgist.schema
 
 import org.specs2.mutable.Specification
 import com.codeandmagic.ukgist.model.PolygonAreaFixture._
-import com.codeandmagic.ukgist.schema.PoliceCrimeDataExtractorFixture._
 import com.codeandmagic.ukgist.util.InvalidKmlException
-import com.codeandmagic.ukgist.model.{Companion, KmlPolygonArea, PoliceArea}
+import com.codeandmagic.ukgist.model.{PoliceCrimeData, Companion, KmlPolygonArea, PoliceArea}
 import org.specs2.mock.Mockito
 import org.orbroker.Row
 
@@ -57,7 +56,23 @@ class AreaExtractorSpec extends Specification with Mockito{
     }
 
     "throw a ClassCastException if this is a Discriminator for something else than an Area" in{
-      AreaExtractor.extract(CRIME_1_ROW) must throwA[ClassCastException]
+      val row = mock[Row]
+      row.bigInt("area.id") returns Some(1)
+      row.integer("area.discriminator") returns Some(PoliceCrimeData.discriminator)
+      AreaExtractor.extract(row) must throwA[ClassCastException]
+    }
+
+    "trow a ClassCastException if the discriminator does not exist" in{
+      val row = mock[Row]
+      row.bigInt("area.id") returns Some(1)
+      row.integer("area.discriminator") returns Some(-1)
+      AreaExtractor.extract(row) must throwA[ClassCastException]
+    }
+
+    "trow a ClassCastException if the row has no information about the discriminator" in{
+      val row = mock[Row]
+      row.bigInt("area.id") returns Some(1)
+      AreaExtractor.extract(row) must throwA[ClassCastException]
     }
 
     "throw a ClassCastException if this is a Discriminator that is not Persistent" in{
@@ -65,7 +80,7 @@ class AreaExtractorSpec extends Specification with Mockito{
         val clazz = manifest[PoliceArea]
         val discriminator = 123
         val row = mock[Row]
-        row.integer("discriminator") returns Some(123)
+        row.integer("area.discriminator") returns Some(123)
         AreaExtractor.extract(row) must throwA[ClassCastException]
       }
     }
