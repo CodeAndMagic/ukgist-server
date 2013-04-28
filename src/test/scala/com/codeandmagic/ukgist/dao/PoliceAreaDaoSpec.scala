@@ -24,7 +24,6 @@ import com.codeandmagic.ukgist.model.PolygonAreaFixture._
 import PoliceAreaDaoFixture._
 import com.codeandmagic.ukgist.util.InvalidKmlException
 import com.codeandmagic.ukgist.model.{PoliceArea, KmlPolygonArea, Area}
-import java.io.FileInputStream
 import org.joda.time.DateTime
 import org.orbroker.Row
 import java.sql.Timestamp
@@ -65,8 +64,7 @@ class PoliceAreaDaoSpec extends Specification{
 }
 
 object PoliceAreaDaoFixture{
-  def mockKmlRow(id:Long, name:String, source:Area.Source.Value, is:FileInputStream,
-                 from:DateTime, to:DateTime) = {
+  def mockKmlRow(id:Long, name:String, source:Area.Source.Value, bytes:Array[Byte], from:DateTime, to:DateTime) = {
     val row = mock[Row]
     row.bigInt("area_id") returns Some(id)
     row.integer("area_discriminator") returns Some(KmlPolygonArea.discriminator)
@@ -74,13 +72,13 @@ object PoliceAreaDaoFixture{
     row.smallInt("area_source") returns Some(source.id.toShort)
     row.timestamp("area_validity_start") returns Some(new Timestamp(from.getMillis))
     row.timestamp("area_validity_end") returns Some(new Timestamp(to.getMillis))
-    row.binaryStream("area_kml") returns Some(is)
+    row.binary("area_kml") returns Some(bytes)
     /*return*/ row
   }
 
-  def mockPoliceRow(id:Long, name:String, source:Area.Source.Value, is:FileInputStream,
+  def mockPoliceRow(id:Long, name:String, source:Area.Source.Value, bytes:Array[Byte],
                     from:DateTime, to:DateTime, force:String, neighborhood:String) = {
-    val row = mockKmlRow(id,name,source,is,from,to)
+    val row = mockKmlRow(id,name,source,bytes,from,to)
     row.integer("area_discriminator") returns Some(PoliceArea.discriminator)
     row.string("area_police_force") returns Some(force)
     row.string("area_police_neighborhood") returns Some(neighborhood)

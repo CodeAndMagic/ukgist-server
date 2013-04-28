@@ -20,15 +20,13 @@
 package com.codeandmagic.ukgist.model
 
 import org.specs2.mock.Mockito
-import java.io.FileInputStream
-import org.orbroker.Row
+import java.io.{InputStream, FileInputStream}
 import org.specs2.matcher.{Matcher, Expectable}
 import de.micromata.opengis.kml.v_2_2_0.{Placemark, Document, Polygon, Kml}
 import scala.collection.JavaConversions.asScalaBuffer
 import com.vividsolutions.jts.geom.{Polygon=>JstPolygon}
 import com.vividsolutions.jts.geom
 import com.codeandmagic.ukgist.model.Interval.FOREVER
-import java.sql.Timestamp
 import org.joda.time.DateTime
 
 /**
@@ -36,7 +34,11 @@ import org.joda.time.DateTime
  * Date: 25/03/2013
  */
 object PolygonAreaFixture extends Mockito{
-  implicit def strToIs(path:String) = new FileInputStream(path)
+  implicit def strToIs(path:String):InputStream = new FileInputStream(path)
+  implicit def strToBytes(path:String):Array[Byte] = {
+    val src = scala.io.Source.fromFile(path)
+    try{ src.map(_.toByte).toArray }finally { src.close() }
+  }
 
   val LONDON_1_KML_PATH = "src/test/resources/city-of-london-ce.kml"
   val LONDON_1_AREA_NAME = "City of London A1"
