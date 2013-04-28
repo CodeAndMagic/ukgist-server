@@ -20,6 +20,7 @@
 package com.codeandmagic.ukgist.model
 
 import com.codeandmagic.ukgist.model.Area.BoundingBox
+import net.liftweb.json.JsonAST.{JString, JInt, JField, JObject}
 
 /**
  * User: cvrabie
@@ -61,6 +62,17 @@ abstract class Area(
   def containsDefinitely(loc:Location):Boolean
 
   def companion:Companion[_<:Area]
+
+  protected def fields = List(
+    JField("id", JInt(id)),
+    JField("name", JString(name)),
+    JField("source", JString(source.toString)),
+    JField("validity", JString(validity.toString))
+  )
+
+  protected lazy val json = JObject(fields)
+
+  def toJson = json
 }
 
 object Area{

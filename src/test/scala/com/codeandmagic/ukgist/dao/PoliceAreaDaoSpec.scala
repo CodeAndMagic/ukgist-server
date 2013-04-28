@@ -54,7 +54,7 @@ class PoliceAreaDaoSpec extends Specification{
       area.validity must beEqualTo(LONDON_1_AREA_VALIDITY)
       area.geometry must beAPolygon(LONDON_1_KML_OUTER)
       area.policeForce must beEqualTo(LONDON_1_FORCE)
-      area.neighborhood must beEqualTo(LONDON_1_NEIGHBORHOOD)
+      area.policeNeighborhood must beEqualTo(LONDON_1_NEIGHBORHOOD)
     }
 
     "throw an InvalidKmlException if the KML is invalid" in{

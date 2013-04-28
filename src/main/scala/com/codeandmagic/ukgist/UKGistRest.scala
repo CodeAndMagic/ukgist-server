@@ -19,9 +19,11 @@
 
 package com.codeandmagic.ukgist
 
-import com.codeandmagic.ukgist.model.{PoliceArea, Location, MonthInterval}
+import com.codeandmagic.ukgist.model._
 import net.liftweb.common.Loggable
 import net.liftweb.http.rest.RestHelper
+import net.liftweb.http.{LiftResponse, JsonResponse}
+import net.liftweb.json.JsonAST.JObject
 
 /**
  * User: cvrabie
@@ -30,9 +32,12 @@ import net.liftweb.http.rest.RestHelper
 object UKGistRest extends RestHelper with Loggable{
   val registry = ComponentRegistry
 
+  implicit def entityToResponse(e:Entity):LiftResponse = JsonResponse(e.toJson)
+  implicit def entityListToResponse(e:Iterable[_<:Entity]):LiftResponse = JsonResponse(new Page(e).toJson)
+
   serve {
-    //information/32.000,-0.54/2013-01
+    //information/32.000,-0.54
     case JsonGet("information" :: Location(loc) :: Nil, _) =>
-      registry.informationDao.listAllInAreas(registry.areaIndex.query(loc)).map(_.toString)
+      registry.informationDao.listAllInAreas(registry.areaIndex.query(loc))
   }
 }

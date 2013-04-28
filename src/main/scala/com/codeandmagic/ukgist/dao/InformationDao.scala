@@ -24,7 +24,7 @@ trait BrokerInformationDaoComponent extends InformationDaoComponent{
     //@see http://stackoverflow.com/questions/178479/preparedstatement-in-clause-alternatives
     val params = IndexedSeq("a0","a1","a2","a3","a4","a5","a6","a7","a8","a9")
     def listAllInAreas(areas: Seq[_ <: Area]) = broker.readOnly()( broker => {
-      if(areas.size>0) error("QUERY FOR MORE THAN 10 AREA. SOME RESULTS WILL BE LOST!")
+      if(areas.size>params.size) error("QUERY FOR MORE THAN 10 AREA. SOME RESULTS WILL BE LOST!")
       val ids = params.zip(areas.map(_.id))
       broker.selectAll(InformationSchemaTokens.informationListAllInAreas, ids:_*)
     })

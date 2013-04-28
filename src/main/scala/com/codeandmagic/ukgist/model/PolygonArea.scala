@@ -22,6 +22,7 @@ package com.codeandmagic.ukgist.model
 import com.vividsolutions.jts.geom.{Coordinate, Polygon}
 import com.codeandmagic.ukgist.model.Area.BoundingBox
 import com.codeandmagic.ukgist.util.GeometryUtils.{locationToGeometry,locationToCoordinate}
+import net.liftweb.json.JsonAST.{JString, JField, JObject}
 
 /**
  * User: cvrabie
@@ -54,6 +55,12 @@ extends Area(id, name, source, validity){
   def containsDefinitely(loc: Location) = geometry.intersects(loc)
 
   override def copyWithId(newId: Long):PolygonArea = new PolygonArea(newId, name, source, validity, geometry)
+
+
+  override protected def fields = super.fields ++ List(
+    JField("geometry", JString(geometry.toString))
+  )
+
 }
 
 object PolygonArea extends Companion[PolygonArea]{

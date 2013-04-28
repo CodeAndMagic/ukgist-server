@@ -22,6 +22,7 @@ package com.codeandmagic.ukgist.model
 import de.micromata.opengis.kml.v_2_2_0.Kml
 import com.codeandmagic.ukgist.util.KmlUtils
 import com.codeandmagic.ukgist.schema.KmlAreaExtractor
+import net.liftweb.json.JsonAST.{JString, JField}
 
 /**
  * User: cvrabie
@@ -35,6 +36,11 @@ class KmlPolygonArea(override val id:Long,
   extends PolygonArea(id,name,source,validity,KmlUtils.kmlPolygonToJtsPolygon(kml)){
   override def companion:Companion[_<:KmlPolygonArea] = KmlPolygonArea
   override def copyWithId(newId: Long):KmlPolygonArea = new KmlPolygonArea(newId, name, source, validity, kml)
+
+  override protected def fields = super.fields.filterNot(_.name=="geometry") ++ List(
+    JField("discriminator",JString(companion.clazz.erasure.getSimpleName)),
+    JField("kml", JString(kml.toString))
+  )
 }
 
 object KmlPolygonArea extends Persistent[KmlPolygonArea]{

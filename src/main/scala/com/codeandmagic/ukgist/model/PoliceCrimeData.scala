@@ -20,6 +20,7 @@
 package com.codeandmagic.ukgist.model
 
 import com.codeandmagic.ukgist.schema.PoliceCrimeDataExtractor
+import net.liftweb.json.JsonAST.{JString, JInt, JField, JObject}
 
 /**
  * User: cvrabie
@@ -28,7 +29,6 @@ import com.codeandmagic.ukgist.schema.PoliceCrimeDataExtractor
 class PoliceCrimeData(
   override val id:Long,
   override val information: Information,
-  override val area: Area,
   val allCrime:Int,
   val antiSocialBehaviour:Int,
   val burglary:Int,
@@ -41,14 +41,29 @@ class PoliceCrimeData(
   val vehicleCrime:Int,
   val violentCrime:Int,
   val otherCrime:Int
-) extends InformationExtension(id, information, area){
+) extends InformationExtension(id, information){
 
-  def copyWithId(newId: Long) = new PoliceCrimeData( id = newId, information=information, area=area, allCrime = allCrime,
+  def copyWithId(newId: Long) = new PoliceCrimeData( id = newId, information=information, allCrime = allCrime,
     antiSocialBehaviour = antiSocialBehaviour, burglary = burglary, criminalDamage = criminalDamage, drugs = drugs,
     otherTheft = otherTheft, publicDisorder = publicDisorder, robbery = robbery, shoplifting = shoplifting,
     vehicleCrime = vehicleCrime, violentCrime = violentCrime, otherCrime = otherCrime)
 
-  def companion:Companion[_<:PoliceCrimeData] = PoliceCrimeData
+  def companion:Persistent[_<:PoliceCrimeData] = PoliceCrimeData
+
+  override protected def fields = super.fields ++ List(
+    JField("allCrime",JInt(allCrime)),
+    JField("antiSocialBehaviour",JInt(antiSocialBehaviour)),
+    JField("burglary",JInt(burglary)),
+    JField("criminalDamage",JInt(criminalDamage)),
+    JField("drugs",JInt(drugs)),
+    JField("otherTheft",JInt(otherTheft)),
+    JField("publicDisorder",JInt(publicDisorder)),
+    JField("robbery",JInt(robbery)),
+    JField("shoplifting",JInt(shoplifting)),
+    JField("vehicleCrime",JInt(vehicleCrime)),
+    JField("violentCrime",JInt(violentCrime)),
+    JField("otherCrime",JInt(otherCrime))
+  )
 }
 
 object PoliceCrimeData extends Persistent[PoliceCrimeData]{

@@ -20,6 +20,11 @@
 package com.codeandmagic.ukgist.model
 
 import com.codeandmagic.ukgist.schema.InformationExtractor
+import net.liftweb.json.JsonAST._
+import net.liftweb.json.JsonAST.JString
+import net.liftweb.json.JsonAST.JField
+import net.liftweb.json.JsonAST.JInt
+import net.liftweb.json.JsonAST.JObject
 
 /**
  * User: cvrabie
@@ -33,13 +38,32 @@ class Information(
 ) extends Entity(id){
   def copyWithId(newId: Long) = new Information(newId, discriminator, area, validity)
   def companion:Companion[_<:Information] = Information
+
+  protected lazy val json = JObject(List(
+    JField("id",JInt(id)),
+    JField("discriminator",Discriminator.findByDiscriminator(discriminator)
+      .map(d=>JString(d.clazz.erasure.getSimpleName)).getOrElse(JNull)),
+    JField("area",area.toJson),
+    JField("validity",JString(validity.toString))
+  ))
+  def toJson = json
 }
 
-object Information extends Persistent[Information]{
+object Information extends Companion[Information]{
   val clazz = manifest[Information]
   def extractor = InformationExtractor
 }
 
-abstract class InformationExtension(override val id:Long, val information:Information, val area:Area) extends Entity(id){
+abstract class InformationExtension(override val id:Long, val information:Information) extends Entity(id){
   def companion:Companion[_<:InformationExtension]
+
+  protected def fields = List(
+    JField("id",JInt(id)),
+    JField("discriminator",JString(companion.clazz.erasure.getSimpleName)),
+    JField("information", information.toJson)
+  )
+
+  protected lazy val json = JObject(fields)
+
+  def toJson = json
 }

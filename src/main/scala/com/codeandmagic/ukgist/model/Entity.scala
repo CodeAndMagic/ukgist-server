@@ -21,6 +21,7 @@ package com.codeandmagic.ukgist.model
 
 import org.orbroker.RowExtractor
 import scala.collection.mutable
+import net.liftweb.json.JsonAST.{JArray, JInt, JField, JObject}
 
 /**
  * User: cvrabie
@@ -29,6 +30,7 @@ import scala.collection.mutable
 abstract class Entity(val id:Long) {
   def companion:Companion[_<:Entity]
   def copyWithId(newId: Long):Entity
+  def toJson:JObject
 }
 
 trait Companion[T]{
@@ -49,4 +51,14 @@ object Discriminator{
     /*return*/ id
   }
   def findByDiscriminator(id:Int) = values.get(id)
+}
+
+class Page(items:Iterable[_<:Entity], totalCount:Int, offset:Int){
+  def this(items:Iterable[_<:Entity]) = this(items,items.size,0)
+  protected lazy val json = JObject(List(
+    JField("count",JInt(items.size)),
+    JField("totalCount",JInt(totalCount)),
+    JField("intems",JArray(items.toList.map(_.toJson)))
+  ))
+  def toJson:JObject = json
 }

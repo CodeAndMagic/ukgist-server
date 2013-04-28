@@ -27,38 +27,39 @@ import scala.math._
 import net.liftweb.common.Loggable
 import com.codeandmagic.ukgist.model.{Area, KmlPolygonArea, Location, PolygonAreaFixture}
 import com.codeandmagic.ukgist.model.Interval.FOREVER
-import scala.collection.JavaConversions.asScalaBuffer
+import com.codeandmagic.ukgist.dao.PoliceAreaDaoComponent
 
 /**
  * User: cvrabie
  * Date: 25/03/2013
  */
-class AreaIndexSpec extends Specification with Loggable{
+class AreaIndexSpec extends Specification with Loggable with STRtreeAreaIndexComponent with PoliceAreaDaoComponent{
   import PolygonAreaFixture._
   import AreaIndexFixture._
 
   logger.info("Loading KMZ with 1000 KMLs")
+  val policeAreaDao = null
   val startLoad = System.currentTimeMillis()
-  val bigAreaIndex = new AreaIndex(BIG_AREAS)
-  def dumbSearch(loc:Location) = bigAreaIndex.areas.filter(_.containsMaybe(loc)).filter(_.containsDefinitely(loc))
+  val areaIndex = new STRtreeAreaIndex(BIG_AREAS)
+  def dumbSearch(loc:Location) = areaIndex.areas.filter(_.containsMaybe(loc)).filter(_.containsDefinitely(loc))
   logger.info("Finished loading KMZ in %s ms".format(System.currentTimeMillis()-startLoad))
 
   "AreaIndex(BIG.KMZ)" should{
 
     "should have one area that contains "+LONDON_1_LOCATION_INSIDE_CONVEX_PART in{
-      val results = bigAreaIndex.query(LONDON_1_LOCATION_INSIDE_CONVEX_PART)
+      val results = areaIndex.query(LONDON_1_LOCATION_INSIDE_CONVEX_PART)
       results.size must beEqualTo(1)
       results(0).id must beEqualTo(LONDON_1_INDEX)
     }
 
     "should have one area that contains "+LONDON_1_LOCATION_INSIDE_CONCAVE_PART in{
-      val results = bigAreaIndex.query(LONDON_1_LOCATION_INSIDE_CONCAVE_PART)
+      val results = areaIndex.query(LONDON_1_LOCATION_INSIDE_CONCAVE_PART)
       results.size must beEqualTo(1)
       results(0).id must beEqualTo(LONDON_1_INDEX)
     }
 
     "should have one area that contains "+LONDON_1_LOCATION_OUTSIDE_CONCAVE_PART in{
-      val results = bigAreaIndex.query(LONDON_1_LOCATION_OUTSIDE_CONCAVE_PART)
+      val results = areaIndex.query(LONDON_1_LOCATION_OUTSIDE_CONCAVE_PART)
       results.size must beEqualTo(1)
       results(0).id must be_!=(LONDON_1_INDEX)
     }
@@ -74,7 +75,7 @@ class AreaIndexSpec extends Specification with Loggable{
 
       //test indexed search
       val startIndexedSearch = System.currentTimeMillis()
-      locs.foreach(bigAreaIndex.query(_))
+      locs.foreach(areaIndex.query(_))
       val durationIndexedSearch = System.currentTimeMillis() - startIndexedSearch
       logger.info("Run time for %d indexed searches was %d ms\n".format(SPEED_TEST_ITERATIONS,durationIndexedSearch))
 

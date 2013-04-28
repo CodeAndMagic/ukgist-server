@@ -38,9 +38,9 @@ trait AreaIndexComponent{
 }
 
 trait STRtreeAreaIndexComponent extends AreaIndexComponent{
-  this:AreaDaoComponent =>
+  this:PoliceAreaDaoComponent =>
 
-  class STRtreeAreaIndex(val areas:Seq[Area]){
+  class STRtreeAreaIndex(val areas:Seq[Area]) extends AreaIndex{
     private val tree = new STRtree
 
     //add all areas in the search index

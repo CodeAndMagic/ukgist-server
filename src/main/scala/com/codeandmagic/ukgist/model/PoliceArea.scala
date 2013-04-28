@@ -2,6 +2,7 @@ package com.codeandmagic.ukgist.model
 
 import de.micromata.opengis.kml.v_2_2_0.Kml
 import com.codeandmagic.ukgist.schema.PoliceAreaExtractor
+import net.liftweb.json.JsonAST.{JString, JField}
 
 /**
  * User: cvrabie
@@ -13,12 +14,17 @@ class PoliceArea(override val id:Long,
                  override val validity:Interval,
                  override val kml:Kml,
                  val policeForce:String,
-                 val neighborhood:String)
+                 val policeNeighborhood:String)
   extends KmlPolygonArea(id,name,source,validity,kml){
 
   override def companion:Companion[_<:PoliceArea] = PoliceArea
 
-  override def copyWithId(newId: Long):PoliceArea = new PoliceArea(newId, name, source, validity, kml, policeForce, neighborhood)
+  override def copyWithId(newId: Long):PoliceArea = new PoliceArea(newId, name, source, validity, kml, policeForce, policeNeighborhood)
+
+  override protected def fields = super.fields ++ List(
+    JField("policeForce",JString(policeForce)),
+    JField("policeNeighborhood",JString(policeNeighborhood))
+  )
 }
 
 

@@ -31,7 +31,6 @@ object PoliceCrimeDataExtractor extends RowExtractor[PoliceCrimeData]{
   def extract(row: Row) = new PoliceCrimeData(
     id = row.bigInt("id").get,
     information = InformationExtractor.extract(row),
-    area = PoliceAreaExtractor.extract(row),
     allCrime = row.integer("all_crime").get,
     antiSocialBehaviour = row.integer("anti_social_behavior").get,
     burglary = row.integer("burglary").get,
