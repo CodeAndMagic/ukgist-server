@@ -26,13 +26,13 @@ import java.util.NoSuchElementException
 import java.io._
 import com.codeandmagic.ukgist.util.InvalidKmlException
 import com.codeandmagic.ukgist.model.Interval.FOREVER
-import com.codeandmagic.ukgist.dao.PoliceAreaDao
+import com.codeandmagic.ukgist.dao.{PoliceAreaDaoComponent, PoliceAreaDao}
 
 /**
  * User: cvrabie
  * Date: 28/03/2013
  */
-class PoliceKmlImportSpec extends Specification{
+class PoliceKmlImportSpec extends Specification with Mockito{
   import PoliceKmlImportFixture._
   import com.codeandmagic.ukgist.model.PolygonAreaFixture.beAPolygonArea
   import com.codeandmagic.ukgist.model.PolygonAreaFixture.LONDON_1_KML_OUTER
@@ -145,7 +145,7 @@ class PoliceKmlImportSpec extends Specification{
       t.clear()
       val expected = t.MSG_CLEAR_QUESTION+"\n\n"+(t.MSG_CLEAR_START.format(Area.Source.POLICE.toString))+"\n"
       t.OUTPUT.toString must beEqualTo(expected)
-      there was one(t.areaDao).deleteBySource(any)
+      there was one(t.dao).deleteBySource(any)
     }
 
     "abort if the permission for clearing the database is not given" in{
@@ -153,7 +153,7 @@ class PoliceKmlImportSpec extends Specification{
       t.clear() must throwA(manifest[RuntimeException])
       val expected = t.MSG_CLEAR_QUESTION+"\n\n"+t.MSG_CLEAR_SKIPPED+"\n"
       t.OUTPUT.toString must beEqualTo(expected)
-      there was no(t.areaDao).deleteBySource(any)
+      there was no(t.dao).deleteBySource(any)
     }
   }
 
@@ -190,22 +190,7 @@ class PoliceKmlImportSpec extends Specification{
   }
 }
 
-object PoliceKmlImportFixture extends Mockito{
-  implicit val in:InputStream = new ByteArrayInputStream("y".getBytes)
-  def tool(args:String*)(implicit in:InputStream):MockPoliceAreaTool =
-    new MockPoliceAreaTool(in,args:_*)
-
-  class MockPoliceAreaTool(val in:InputStream, override val args:String*) extends PoliceKmlTool(args:_*){
-    override val areaDao = mock[PoliceAreaDao]
-    val OUTPUT = new ByteArrayOutputStream()
-    override val OUT = new PrintStream(OUTPUT)
-    override val IN =  in
-    override def apply():MockPoliceAreaTool = {
-      super.apply()
-      this
-    }
-  }
-
+object PoliceKmlImportFixture{
   val FLAG_SOURCE = "--source"
   val FLAG_SOURCE_OTHER = "OTHER"
   val FLAG_SOURCE_OTHER_EXPECTED = Area.Source.OTHER
@@ -226,4 +211,23 @@ object PoliceKmlImportFixture extends Mockito{
   val BROKEN_KML_PATH = "src/test/resources/broken.kml"
   val PATH_KMZ = "src/test/resources/big.kmz"
   val PATH_DIR = "src/test/resources/kmls"
+
+  implicit val in:InputStream = new ByteArrayInputStream("y".getBytes)
+  def tool(args:String*)(implicit is:InputStream) =  new MockRegistry(is, args:_*).policeKmlTool
+}
+
+class MockRegistry(is:InputStream, args:String*) extends Mockito with PoliceKmlToolComponent with PoliceAreaDaoComponent{
+  val policeAreaDao = mock[PoliceAreaDao]
+  val policeKmlTool = new MockPoliceAreaTool
+
+  class MockPoliceAreaTool extends PoliceKmlTool(args:_*){
+    val OUTPUT = new ByteArrayOutputStream()
+    val dao = policeAreaDao
+    override val OUT = new PrintStream(OUTPUT)
+    override val IN =  is
+    override def apply():MockPoliceAreaTool = {
+      super.apply()
+      this
+    }
+  }
 }

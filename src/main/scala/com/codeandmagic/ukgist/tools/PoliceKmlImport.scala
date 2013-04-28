@@ -25,10 +25,9 @@ import com.vividsolutions.jts.geom.{Polygon => JstPolygon}
 import java.io.{FileFilter, File}
 import net.liftweb.util.Helpers.tryo
 import de.micromata.opengis.kml.v_2_2_0.Kml
-import scala.Some
 import net.liftweb.common.Logger
-import com.codeandmagic.ukgist.dao.PoliceAreaDao
-import com.codeandmagic.ukgist.ComponentRegistry
+import com.codeandmagic.ukgist.dao._
+import scala.Some
 
 /**
  * User: cvrabie
@@ -37,9 +36,22 @@ import com.codeandmagic.ukgist.ComponentRegistry
 object PoliceKmlImport extends App {
   override def main(args: Array[String]) {
     super.main(args)
-    new PoliceKmlTool(args:_*).apply()
+
+    object ComponentRegistry extends PoliceKmlToolComponent with BrokerComponent with BrokerPoliceAreaDaoComponent{
+      val broker = ORBrokerFactory.fromProps()
+      val policeAreaDao = new BrokerPoliceAreaDao
+      val policeKmlTool = new PoliceKmlTool(args:_*)
+    }
+
+    ComponentRegistry.policeKmlTool.apply()
   }
 }
+
+trait PoliceKmlToolComponent{
+  this:PoliceAreaDaoComponent =>
+
+  val policeKmlTool:PoliceKmlTool
+
 /**
  * Tool that inserts into the database [[com.codeandmagic.ukgist.model.PolygonArea]]s based on the KML files
  * provided by the Police Data website http://www.police.uk/data
@@ -110,8 +122,6 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*) with Logger
       |--prefix: Prefix to be placed in front of the computed area name.
     """.stripMargin.format(PROGRAM_NAME,Area.Source.CSV,SOURCE_DEFAULT)
 
-  val areaDao:PoliceAreaDao = ComponentRegistry.policeAreaDao
-
   override def apply():PoliceKmlTool = {
     super.apply()
     this
@@ -135,7 +145,7 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*) with Logger
     OUT.println("\n")
     if (sure == 'y') {
       OUT.println(MSG_CLEAR_START.format(SOURCE))
-      areaDao.deleteBySource(SOURCE)
+      policeAreaDao.deleteBySource(SOURCE)
     }else{
       OUT.println(MSG_CLEAR_SKIPPED)
       throw new RuntimeException("Execution aborted")
@@ -166,6 +176,7 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*) with Logger
     })
   }
 
-  def writeAll(areas:Seq[PoliceArea]) = areaDao.saveAll(areas)
+  def writeAll(areas:Seq[PoliceArea]) = policeAreaDao.saveAll(areas)
+}
 }
 
