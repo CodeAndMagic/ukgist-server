@@ -22,7 +22,6 @@ package com.codeandmagic.ukgist.model
 import org.specs2.mock.Mockito
 import java.sql.Timestamp
 import org.joda.time.DateTime
-import org.orbroker.Row
 
 /**
  * User: cvrabie
@@ -36,11 +35,4 @@ object InformationFixture extends Mockito{
   val INFO_1_ID = 2
   val INFO_1_VALIDITY_START = new Timestamp(new DateTime().getMillis)
   val INFO_1_VALIDITY_END = new Timestamp(new DateTime().plusMonths(1).getMillis)
-
-  import PolygonAreaFixture._
-  val INFO_1_ROW = LONDON_1_KML_ROW
-  INFO_1_ROW.integer("info.id") returns INFO_1_ID.toOption
-  INFO_1_ROW.integer("info.discriminator") returns 0.toOption
-  INFO_1_ROW.timestamp("info.validity_start") returns INFO_1_VALIDITY_START.toOption
-  INFO_1_ROW.timestamp("info.validity_end") returns INFO_1_VALIDITY_END.toOption
 }

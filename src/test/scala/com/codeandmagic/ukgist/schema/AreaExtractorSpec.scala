@@ -21,6 +21,7 @@ package com.codeandmagic.ukgist.schema
 
 import org.specs2.mutable.Specification
 import com.codeandmagic.ukgist.model.PolygonAreaFixture._
+import com.codeandmagic.ukgist.dao.PoliceAreaDaoFixture._
 import com.codeandmagic.ukgist.util.InvalidKmlException
 import com.codeandmagic.ukgist.model.{PoliceCrimeData, Companion, KmlPolygonArea, PoliceArea}
 import org.specs2.mock.Mockito
