@@ -19,7 +19,7 @@
 
 package com.codeandmagic.ukgist
 
-import com.codeandmagic.ukgist.dao.{ORBrokerFactory, BrokerComponent, BrokerPoliceAreaDaoComponent}
+import com.codeandmagic.ukgist.dao.{BrokerInformationDaoComponent, ORBrokerFactory, BrokerComponent, BrokerPoliceAreaDaoComponent}
 
 /**
  * User: cvrabie
@@ -27,7 +27,8 @@ import com.codeandmagic.ukgist.dao.{ORBrokerFactory, BrokerComponent, BrokerPoli
  * WHERE ALL THE MAGIC HAPPENDS
  * @see CakePattern http://jonasboner.com/2008/10/06/real-world-scala-dependency-injection-di/
  */
-object ComponentRegistry extends BrokerComponent with BrokerPoliceAreaDaoComponent{
+object ComponentRegistry extends BrokerComponent with BrokerPoliceAreaDaoComponent with BrokerInformationDaoComponent{
   val broker = ORBrokerFactory.fromProps()
   val policeAreaDao = new BrokerPoliceAreaDao
+  val informationDao = new BrokerInformationDao
 }

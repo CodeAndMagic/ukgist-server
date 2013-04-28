@@ -20,8 +20,7 @@
 package com.codeandmagic.ukgist.model
 
 import org.specs2.mock.Mockito
-import java.sql.Timestamp
-import org.joda.time.DateTime
+import com.codeandmagic.ukgist.model.Interval.FOREVER
 
 /**
  * User: cvrabie
@@ -32,7 +31,7 @@ class InformationSpec {
 }
 
 object InformationFixture extends Mockito{
-  val INFO_1_ID = 2
-  val INFO_1_VALIDITY_START = new Timestamp(new DateTime().getMillis)
-  val INFO_1_VALIDITY_END = new Timestamp(new DateTime().plusMonths(1).getMillis)
+  val INFO_1_ID = 123
+  val INFO_1_VALIDITY = FOREVER
+
 }

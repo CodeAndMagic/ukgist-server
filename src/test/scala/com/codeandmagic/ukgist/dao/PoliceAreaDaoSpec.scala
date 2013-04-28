@@ -41,11 +41,11 @@ class PoliceAreaDaoSpec extends Specification{
     val policeAreaDao = new BrokerPoliceAreaDao
   }
 
-  "PoliceAreaDao" should{
+  "PoliceAreaDao(area_fixture.sqlite)" should{
     val all = MockRegistry.policeAreaDao.listAll()
 
     "list all items in the database" in{
-      all.size must be_==(1)
+      all.size must be_==(2)
     }
 
     "correctly deserialize a valid Area" in{
@@ -53,6 +53,8 @@ class PoliceAreaDaoSpec extends Specification{
       area.name must beEqualTo(LONDON_1_AREA_NAME)
       area.validity must beEqualTo(LONDON_1_AREA_VALIDITY)
       area.geometry must beAPolygon(LONDON_1_KML_OUTER)
+      area.policeForce must beEqualTo(LONDON_1_FORCE)
+      area.neighborhood must beEqualTo(LONDON_1_NEIGHBORHOOD)
     }
 
     "throw an InvalidKmlException if the KML is invalid" in{

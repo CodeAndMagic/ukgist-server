@@ -29,12 +29,12 @@ import org.joda.time.DateTime
  */
 object InformationExtractor extends RowExtractor[Information]{
   def extract(row: Row) = new Information(
-    row.bigInt("id").get,
-    row.integer("discriminator").get,
+    row.bigInt("info_id").get,
+    row.integer("info_discriminator").get,
     AreaExtractor.extract(row),
     new Interval(
-      row.timestamp("validity_start").map(new DateTime(_)),
-      row.timestamp("validity_end").map(new DateTime(_))
+      row.timestamp("info_validity_start").map(new DateTime(_)),
+      row.timestamp("info_validity_end").map(new DateTime(_))
     )
   )
 }

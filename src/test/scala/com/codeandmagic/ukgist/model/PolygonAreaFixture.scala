@@ -38,7 +38,6 @@ import org.joda.time.DateTime
 object PolygonAreaFixture extends Mockito{
   implicit def strToIs(path:String) = new FileInputStream(path)
 
-
   val LONDON_1_KML_PATH = "src/test/resources/city-of-london-ce.kml"
   val LONDON_1_AREA_NAME = "City of London A1"
   val LONDON_1_AREA_SOURCE = Area.Source.POLICE
@@ -48,8 +47,8 @@ object PolygonAreaFixture extends Mockito{
   val LONDON_1_AREA = new KmlPolygonArea(1,LONDON_1_AREA_NAME,LONDON_1_AREA_SOURCE,FOREVER,LONDON_1_KML)
   val LONDON_1_FROM = new DateTime()
   val LONDON_1_TO = new DateTime().plusMonths(3)
-  val LONDON_1_FORCE = "London"
-  val LONDON_1_NEIGHBORHOOD = "City1"
+  val LONDON_1_FORCE = "city-of-london"
+  val LONDON_1_NEIGHBORHOOD = "ce"
 
   val LONDON_1_LOCATION_INSIDE_CONVEX_PART = new Location(51.512979, -0.078002)
   val LONDON_1_LOCATION_INSIDE_CONCAVE_PART = new Location(51.509842, -0.075439)

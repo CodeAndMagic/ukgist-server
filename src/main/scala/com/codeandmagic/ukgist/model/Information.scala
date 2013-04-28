@@ -25,7 +25,12 @@ import com.codeandmagic.ukgist.schema.InformationExtractor
  * User: cvrabie
  * Date: 24/04/2013
  */
-class Information(override val id:Long, val discriminator:Int, val area:Area, val validity:Interval) extends Entity(id){
+class Information(
+  override val id:Long,
+  val discriminator:Int,
+  val area:Area,
+  val validity:Interval
+) extends Entity(id){
   def copyWithId(newId: Long) = new Information(newId, discriminator, area, validity)
   def companion:Companion[_<:Information] = Information
 }
