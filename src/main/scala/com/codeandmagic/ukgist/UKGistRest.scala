@@ -28,10 +28,11 @@ import net.liftweb.http.rest.RestHelper
  * Date: 09/03/2013
  */
 object UKGistRest extends RestHelper with Loggable{
-  serve {
-    //crime/32.000,-0.54/2013-01
-    case Get("crime" :: Location(loc) :: MonthInterval(mi) :: Nil, _) => <div><b>hello world!</b><p>{loc}</p>{mi}<p></p></div>
+  val registry = ComponentRegistry
 
-    //case JsonGet("areas" :: Nil, _) => PoliceArea.listAll()
+  serve {
+    //information/32.000,-0.54/2013-01
+    case JsonGet("information" :: Location(loc) :: Nil, _) =>
+      registry.informationDao.listAllInAreas(registry.areaIndex.query(loc)).map(_.toString)
   }
 }
