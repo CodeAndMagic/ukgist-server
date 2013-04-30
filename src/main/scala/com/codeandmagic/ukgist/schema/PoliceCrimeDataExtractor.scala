@@ -29,19 +29,19 @@ import org.joda.time.DateTime
  */
 object PoliceCrimeDataExtractor extends RowExtractor[PoliceCrimeData]{
   def extract(row: Row) = new PoliceCrimeData(
-    id = row.integer("id").get,
+    id = row.integer("infox_id").get,
     information = InformationExtractor.extract(row),
-    allCrime = row.integer("all_crime").get,
-    antiSocialBehaviour = row.integer("anti_social_behavior").get,
-    burglary = row.integer("burglary").get,
-    criminalDamage = row.integer("criminal_damage").get,
-    drugs = row.integer("drugs").get,
-    otherTheft = row.integer("other_theft").get,
-    publicDisorder = row.integer("public_disorder").get,
-    robbery = row.integer("robbery").get,
-    shoplifting = row.integer("shoplifting").get,
-    vehicleCrime = row.integer("vehicle_crime").get,
-    violentCrime = row.integer("violent_crime").get,
-    otherCrime = row.integer("other_crime").get
+    allCrime = row.integer("infox_all_crime").get,
+    antiSocialBehaviour = row.integer("infox_anti_social_behavior").get,
+    burglary = row.integer("infox_burglary").get,
+    criminalDamage = row.integer("infox_criminal_damage").get,
+    drugs = row.integer("infox_drugs").get,
+    otherTheft = row.integer("infox_other_theft").get,
+    publicDisorder = row.integer("infox_public_disorder").get,
+    robbery = row.integer("infox_robbery").get,
+    shoplifting = row.integer("infox_shoplifting").get,
+    vehicleCrime = row.integer("infox_vehicle_crime").get,
+    violentCrime = row.integer("infox_violent_crime").get,
+    otherCrime = row.integer("infox_other_crime").get
   )
 }

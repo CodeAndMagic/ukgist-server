@@ -22,9 +22,9 @@ package bootstrap.liftweb
 import net.liftweb.http._
 import _root_.net.liftweb.http.provider._
 import com.codeandmagic.ukgist.UKGistRest
-import com.codeandmagic.ukgist.dao.{ORBrokerFactory, BrokerInformationDaoComponent, BrokerPoliceAreaDaoComponent, BrokerComponent}
+import com.codeandmagic.ukgist.dao._
 import com.codeandmagic.ukgist.service.STRtreeAreaIndexComponent
-import com.codeandmagic.ukgist.model.PoliceArea
+import net.liftweb.http.Html5Properties
 
 /*
  * WHERE ALL THE MAGIC HAPPENS
@@ -35,11 +35,15 @@ object WebComponentRegistry
   with BrokerPoliceAreaDaoComponent
   with BrokerInformationDaoComponent
   with STRtreeAreaIndexComponent
+  with DiscriminatorInformationExtensionDaoComponent
+  with BrokerPoliceCrimeDataDaoComponent
 {
   val broker = ORBrokerFactory.fromProps()
   val policeAreaDao = new BrokerPoliceAreaDao
-  val informationDao = new BrokerInformationDao
   val areaIndex = new STRtreeAreaIndex(policeAreaDao.listAll())
+  val informationDao = new BrokerInformationDao
+  val informationExtensionDao = new DiscriminatorInformationExtensionDao
+  val policeCrimeDataDao = new BrokerPoliceCrimeDataDao
 }
 
 /**

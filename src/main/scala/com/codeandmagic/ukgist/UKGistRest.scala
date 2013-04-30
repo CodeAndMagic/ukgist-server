@@ -35,9 +35,19 @@ object UKGistRest extends RestHelper with Loggable{
   implicit def entityToResponse(e:Entity):LiftResponse = JsonResponse(e.toJson)
   implicit def entityListToResponse(e:Iterable[_<:Entity]):LiftResponse = JsonResponse(new Page(e).toJson)
 
+  def listInfoInArea(loc:Location) = registry.informationDao.listAllInAreas(registry.areaIndex.query(loc))
+  object InfoExt{
+    def unapply(idMaybe:String):Option[InformationExtension] = try{
+      registry.informationExtensionDao.getDiscriminatorAndInformationId(classOf[PoliceCrimeData],idMaybe.toInt)
+    }catch {
+      case e => None
+    }
+  }
+
   serve {
     //information/32.000,-0.54
-    case JsonGet("information" :: Location(loc) :: Nil, _) =>
-      registry.informationDao.listAllInAreas(registry.areaIndex.query(loc))
+    case JsonGet("information" :: Location(loc) :: Nil, _) => listInfoInArea(loc)
+    case JsonGet("information" :: InfoExt(info) :: Nil, _) => info
+
   }
 }

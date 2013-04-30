@@ -1,6 +1,6 @@
 package com.codeandmagic.ukgist.dao
 
-import com.codeandmagic.ukgist.model.{Information, Area}
+import com.codeandmagic.ukgist.model._
 import com.codeandmagic.ukgist.schema.InformationSchemaTokens
 import net.liftweb.common.Logger
 
@@ -28,5 +28,49 @@ trait BrokerInformationDaoComponent extends InformationDaoComponent{
       val ids = params.zip(areas.map(_.id))
       broker.selectAll(InformationSchemaTokens.informationListAllInAreas, ids:_*)
     })
+  }
+}
+
+trait MergeInformationExtensionDao{
+  def getDiscriminatorAndInformationId(discriminator: Class[_<:InformationExtension], informationId:Int):Option[InformationExtension]
+
+}
+
+trait MergeInformationExtensionDaoComponent{
+  val informationExtensionDao:MergeInformationExtensionDao
+}
+
+trait DiscriminatorInformationExtensionDaoComponent extends MergeInformationExtensionDaoComponent{
+  this:PoliceCrimeDataDaoComponent =>
+
+  class DiscriminatorInformationExtensionDao extends MergeInformationExtensionDao with Logger{
+    //TODO this is not scalable
+    val TPoliceCrimeData = classOf[PoliceCrimeData]
+    def getDiscriminatorAndInformationId(discriminator: Class[_<:InformationExtension], informationId: Int) = discriminator match {
+      case TPoliceCrimeData => policeCrimeDataDao.getByInfoId(informationId)
+      case _ => throw new ClassCastException(("Discriminator %s is unknown or not for an InformationExtension. " +
+      "Is the discriminator stable and the class holding it loaded? Has the class name changed?").format(discriminator))
+    }
+  }
+}
+
+trait InformationExtensionDao[T <: InformationExtension] {
+  def getByInfoId(id:Int):Option[T]
+}
+
+trait PoliceCrimeDataDao extends InformationExtensionDao[PoliceCrimeData]
+
+trait PoliceCrimeDataDaoComponent{
+  val policeCrimeDataDao:PoliceCrimeDataDao
+}
+
+trait BrokerPoliceCrimeDataDaoComponent extends PoliceCrimeDataDaoComponent{
+  this:BrokerComponent =>
+
+  import com.codeandmagic.ukgist.util.withV
+  class BrokerPoliceCrimeDataDao extends PoliceCrimeDataDao with Logger{
+    def getByInfoId(id: Int) = broker.readOnly()(
+      _.selectOne(InformationSchemaTokens.policeCrimeDataGetById, "id"->id)
+    )
   }
 }

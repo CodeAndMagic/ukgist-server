@@ -39,14 +39,22 @@ class Information(
   def copyWithId(newId: Int) = new Information(newId, discriminator, area, validity)
   def companion:Companion[_<:Information] = Information
 
-  protected lazy val json = JObject(List(
+  def jsonFieldsWithoutArea = List(
     JField("id",JInt(id)),
     JField("discriminator",Discriminator.findByDiscriminator(discriminator)
       .map(d=>JString(d.clazz.erasure.getSimpleName)).getOrElse(JNull)),
-    JField("area",area.toJson),
     JField("validity",validity.toJson)
-  ))
+  )
+
+  def jsonFieldsWithArea = jsonFieldsWithoutArea :+ JField("area",area.toJson)
+
+  protected lazy val json = JObject(jsonFieldsWithoutArea)
+
+  protected lazy val jsonWithArea = JObject(jsonFieldsWithArea)
+
   def toJson = json
+
+  def toJsonWithArea = jsonWithArea
 }
 
 object Information extends Companion[Information]{
@@ -60,7 +68,7 @@ abstract class InformationExtension(override val id:Int, val information:Informa
   protected def fields = List(
     JField("id",JInt(id)),
     JField("discriminator",JString(companion.clazz.erasure.getSimpleName)),
-    JField("information", information.toJson)
+    JField("information", information.toJsonWithArea)
   )
 
   protected lazy val json = JObject(fields)
