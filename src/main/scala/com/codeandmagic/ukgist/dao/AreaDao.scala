@@ -62,6 +62,9 @@ trait BrokerPoliceAreaDaoComponent extends PoliceAreaDaoComponent{
   this:BrokerComponent => //cake pattern
 
   class BrokerPoliceAreaDao extends PoliceAreaDao with Logger{
+    //force class load and thus discriminator assignment
+    PoliceArea.discriminator //TODO BAD!
+
     def getById(id: Long) = broker.readOnly()(
       _.selectOne(PoliceAreaSchemaTokens.policeAreaGetById, "id"->id)
     )

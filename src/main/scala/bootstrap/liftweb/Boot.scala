@@ -24,6 +24,7 @@ import _root_.net.liftweb.http.provider._
 import com.codeandmagic.ukgist.UKGistRest
 import com.codeandmagic.ukgist.dao.{ORBrokerFactory, BrokerInformationDaoComponent, BrokerPoliceAreaDaoComponent, BrokerComponent}
 import com.codeandmagic.ukgist.service.STRtreeAreaIndexComponent
+import com.codeandmagic.ukgist.model.PoliceArea
 
 /*
  * WHERE ALL THE MAGIC HAPPENS
