@@ -23,6 +23,7 @@ import de.micromata.opengis.kml.v_2_2_0.Kml
 import com.codeandmagic.ukgist.util.KmlUtils
 import com.codeandmagic.ukgist.schema.KmlAreaExtractor
 import net.liftweb.json.JsonAST.{JString, JField}
+import java.io.ByteArrayOutputStream
 
 /**
  * User: cvrabie
@@ -39,11 +40,14 @@ class KmlPolygonArea(override val id:Int,
 
   override protected def fields = super.fields.filterNot(_.name=="geometry") ++ List(
     JField("discriminator",JString(companion.clazz.erasure.getSimpleName)),
-    JField("kml", JString(kml.toString))
+    JField("kml", KmlPolygonArea.kmlToJson(kml))
   )
 }
 
 object KmlPolygonArea extends Persistent[KmlPolygonArea]{
   val clazz = manifest[KmlPolygonArea]
   def extractor = KmlAreaExtractor
+
+  import com.codeandmagic.ukgist.util.withV
+  def kmlToJson(kml:Kml) = JString(withV(new ByteArrayOutputStream())(kml.marshal(_)).toString("UTF-8"))
 }
