@@ -31,12 +31,12 @@ import net.liftweb.json.JsonAST.JObject
  * Date: 24/04/2013
  */
 class Information(
-  override val id:Long,
+  override val id:Int,
   val discriminator:Int,
   val area:Area,
   val validity:Interval
 ) extends Entity(id){
-  def copyWithId(newId: Long) = new Information(newId, discriminator, area, validity)
+  def copyWithId(newId: Int) = new Information(newId, discriminator, area, validity)
   def companion:Companion[_<:Information] = Information
 
   protected lazy val json = JObject(List(
@@ -54,7 +54,7 @@ object Information extends Companion[Information]{
   def extractor = InformationExtractor
 }
 
-abstract class InformationExtension(override val id:Long, val information:Information) extends Entity(id){
+abstract class InformationExtension(override val id:Int, val information:Information) extends Entity(id){
   def companion:Companion[_<:InformationExtension]
 
   protected def fields = List(

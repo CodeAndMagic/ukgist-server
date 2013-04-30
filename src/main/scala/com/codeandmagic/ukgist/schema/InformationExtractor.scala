@@ -29,7 +29,7 @@ import org.joda.time.DateTime
  */
 object InformationExtractor extends RowExtractor[Information]{
   def extract(row: Row) = new Information(
-    row.bigInt("info_id").get,
+    row.integer("info_id").get,
     row.integer("info_discriminator").get,
     AreaExtractor.extract(row),
     new Interval(

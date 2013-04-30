@@ -29,7 +29,7 @@ import java.io.ByteArrayInputStream
 
 object KmlAreaExtractor extends RowExtractor[KmlPolygonArea]{
   def extract(row: Row) = new KmlPolygonArea(
-    row.bigInt("area_id").get,
+    row.integer("area_id").get,
     row.string("area_name").get,
     row.smallInt("area_source").map(Area.Source(_)).get,
     new Interval(
@@ -53,7 +53,7 @@ object KmlAreaExtractor extends RowExtractor[KmlPolygonArea]{
  */
 object PoliceAreaExtractor extends RowExtractor[PoliceArea]{
   def extract(row: Row) = new PoliceArea(
-    row.bigInt("area_id").get,
+    row.integer("area_id").get,
     row.string("area_name").get,
     row.smallInt("area_source").map(Area.Source(_)).get,
     new Interval(

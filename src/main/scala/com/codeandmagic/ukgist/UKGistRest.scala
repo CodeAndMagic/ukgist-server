@@ -23,14 +23,14 @@ import com.codeandmagic.ukgist.model._
 import net.liftweb.common.Loggable
 import net.liftweb.http.rest.RestHelper
 import net.liftweb.http.{LiftResponse, JsonResponse}
-import net.liftweb.json.JsonAST.JObject
+import bootstrap.liftweb.WebComponentRegistry
 
 /**
  * User: cvrabie
  * Date: 09/03/2013
  */
 object UKGistRest extends RestHelper with Loggable{
-  val registry = ComponentRegistry
+  val registry = WebComponentRegistry
 
   implicit def entityToResponse(e:Entity):LiftResponse = JsonResponse(e.toJson)
   implicit def entityListToResponse(e:Iterable[_<:Entity]):LiftResponse = JsonResponse(new Page(e).toJson)

@@ -8,7 +8,7 @@ import net.liftweb.json.JsonAST.{JString, JField}
  * User: cvrabie
  * Date: 07/04/2013
  */
-class PoliceArea(override val id:Long,
+class PoliceArea(override val id:Int,
                  override val name:String,
                  override val source:Area.Source.Value,
                  override val validity:Interval,
@@ -19,7 +19,7 @@ class PoliceArea(override val id:Long,
 
   override def companion:Companion[_<:PoliceArea] = PoliceArea
 
-  override def copyWithId(newId: Long):PoliceArea = new PoliceArea(newId, name, source, validity, kml, policeForce, policeNeighborhood)
+  override def copyWithId(newId: Int):PoliceArea = new PoliceArea(newId, name, source, validity, kml, policeForce, policeNeighborhood)
 
   override protected def fields = super.fields ++ List(
     JField("policeForce",JString(policeForce)),

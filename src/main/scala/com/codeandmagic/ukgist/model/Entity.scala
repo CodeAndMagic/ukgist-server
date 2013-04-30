@@ -27,9 +27,9 @@ import net.liftweb.json.JsonAST.{JArray, JInt, JField, JObject}
  * User: cvrabie
  * Date: 12/04/2013
  */
-abstract class Entity(val id:Long) {
+abstract class Entity(val id:Int) {
   def companion:Companion[_<:Entity]
-  def copyWithId(newId: Long):Entity
+  def copyWithId(newId: Int):Entity
   def toJson:JObject
 }
 

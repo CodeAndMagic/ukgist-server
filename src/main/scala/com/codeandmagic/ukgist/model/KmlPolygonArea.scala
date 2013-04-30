@@ -28,14 +28,14 @@ import net.liftweb.json.JsonAST.{JString, JField}
  * User: cvrabie
  * Date: 27/03/2013
  */
-class KmlPolygonArea(override val id:Long,
+class KmlPolygonArea(override val id:Int,
                           override val name:String,
                           override val source:Area.Source.Value,
                           override val validity: Interval,
                           val kml:Kml)
   extends PolygonArea(id,name,source,validity,KmlUtils.kmlPolygonToJtsPolygon(kml)){
   override def companion:Companion[_<:KmlPolygonArea] = KmlPolygonArea
-  override def copyWithId(newId: Long):KmlPolygonArea = new KmlPolygonArea(newId, name, source, validity, kml)
+  override def copyWithId(newId: Int):KmlPolygonArea = new KmlPolygonArea(newId, name, source, validity, kml)
 
   override protected def fields = super.fields.filterNot(_.name=="geometry") ++ List(
     JField("discriminator",JString(companion.clazz.erasure.getSimpleName)),

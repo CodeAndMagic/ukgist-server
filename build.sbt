@@ -47,6 +47,7 @@ libraryDependencies ++= Seq(
   "org.eclipse.jetty" % "jetty-webapp" % "7.6.0.RC5" % "container",
   "org.eclipse.jetty" % "jetty-servlets" % "7.6.0.RC5" % "container",
   "org.xerial" % "sqlite-jdbc" % "3.7.2" % "test",
+  "org.hsqldb" % "hsqldb" % "2.2.9" % "test",
   "org.specs2" %% "specs2" % "1.12.1" % "test",
   "org.mockito" % "mockito-all" % "1.9.0" % "test" 
 )

@@ -22,12 +22,32 @@ package bootstrap.liftweb
 import net.liftweb.http._
 import _root_.net.liftweb.http.provider._
 import com.codeandmagic.ukgist.UKGistRest
+import com.codeandmagic.ukgist.dao.{ORBrokerFactory, BrokerInformationDaoComponent, BrokerPoliceAreaDaoComponent, BrokerComponent}
+import com.codeandmagic.ukgist.service.STRtreeAreaIndexComponent
+
+/*
+ * WHERE ALL THE MAGIC HAPPENS
+ * @see CakePattern http://jonasboner.com/2008/10/06/real-world-scala-dependency-injection-di/
+ */
+object WebComponentRegistry
+  extends BrokerComponent
+  with BrokerPoliceAreaDaoComponent
+  with BrokerInformationDaoComponent
+  with STRtreeAreaIndexComponent
+{
+  val broker = ORBrokerFactory.fromProps()
+  val policeAreaDao = new BrokerPoliceAreaDao
+  val informationDao = new BrokerInformationDao
+  val areaIndex = new STRtreeAreaIndex(policeAreaDao.listAll())
+}
 
 /**
  * A class that's instantiated early and run.  It allows the application
  * to modify lift's environment
  */
 class Boot {
+
+
   def boot {
     //LiftRules.addToPackages("com.codeandmagic.ukgist")
 

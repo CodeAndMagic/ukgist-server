@@ -27,7 +27,7 @@ import net.liftweb.json.JsonAST.{JString, JInt, JField, JObject}
  * Date: 24/04/2013
  */
 class PoliceCrimeData(
-  override val id:Long,
+  override val id:Int,
   override val information: Information,
   val allCrime:Int,
   val antiSocialBehaviour:Int,
@@ -43,7 +43,7 @@ class PoliceCrimeData(
   val otherCrime:Int
 ) extends InformationExtension(id, information){
 
-  def copyWithId(newId: Long) = new PoliceCrimeData( id = newId, information=information, allCrime = allCrime,
+  def copyWithId(newId: Int) = new PoliceCrimeData( id = newId, information=information, allCrime = allCrime,
     antiSocialBehaviour = antiSocialBehaviour, burglary = burglary, criminalDamage = criminalDamage, drugs = drugs,
     otherTheft = otherTheft, publicDisorder = publicDisorder, robbery = robbery, shoplifting = shoplifting,
     vehicleCrime = vehicleCrime, violentCrime = violentCrime, otherCrime = otherCrime)

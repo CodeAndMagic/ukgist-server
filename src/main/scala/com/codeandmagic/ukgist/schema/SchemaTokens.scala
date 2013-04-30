@@ -32,7 +32,7 @@ object PoliceAreaSchemaTokens extends TokenSet(true) {
   val policeAreaGetById = Token('policeAreaGetById, PoliceAreaExtractor)
   val policeAreaListAll = Token('policeAreaListAll, PoliceAreaExtractor)
   val policeAreaDeleteBySource = Token[Int]('policeAreaDeleteBySource, AreaSourceConv)
-  val policeAreaSaveAll = Token[Long]('policeAreaSaveAll, JodaDateTimeConv, AreaSourceConv, KmlConv)
+  val policeAreaSaveAll = Token[Int]('policeAreaSaveAll, JodaDateTimeConv, AreaSourceConv, KmlConv)
 }
 
 object InformationSchemaTokens extends TokenSet(true){

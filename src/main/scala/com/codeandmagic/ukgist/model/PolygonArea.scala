@@ -36,7 +36,7 @@ import net.liftweb.json.JsonAST.{JString, JField, JObject}
  * @param geometry
  */
 class PolygonArea(
-  override val id: Long,
+  override val id: Int,
   override val name: String,
   override val source:Area.Source.Value,
   override val validity: Interval,
@@ -54,7 +54,7 @@ extends Area(id, name, source, validity){
 
   def containsDefinitely(loc: Location) = geometry.intersects(loc)
 
-  override def copyWithId(newId: Long):PolygonArea = new PolygonArea(newId, name, source, validity, geometry)
+  override def copyWithId(newId: Int):PolygonArea = new PolygonArea(newId, name, source, validity, geometry)
 
 
   override protected def fields = super.fields ++ List(

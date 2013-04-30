@@ -27,17 +27,17 @@ class InformationDaoSpec extends Specification{
 
 object InformationDaoFixture extends Mockito{
   PoliceArea.discriminator //for discriminator assignment
-  val INFO_AREA_1_ID = 456L
-  val INFO_AREA_2_ID = 567L
-  val INFO_AREA_3_ID = 678L
+  val INFO_AREA_1_ID = 456
+  val INFO_AREA_2_ID = 567
+  val INFO_AREA_3_ID = 678
   val INFO_AREA_ID_LIST = INFO_AREA_1_ID :: INFO_AREA_2_ID :: Nil
   val INFO_AREA_LIST = INFO_AREA_ID_LIST.map( id => {
     val area = mock[Area]
     area.id returns(id)
     area
   })
-  val INFO_1_ID = 123L
-  val INFO_2_ID = 234L
-  val INFO_3_ID = 345L
+  val INFO_1_ID = 123
+  val INFO_2_ID = 234
+  val INFO_3_ID = 345
   val INFO_ID_LIST = INFO_1_ID :: INFO_2_ID :: Nil
 }

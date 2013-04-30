@@ -31,7 +31,7 @@ import net.liftweb.json.JsonAST.{JString, JInt, JField, JObject}
  * Defines a grouping for statistics, usually geographic.
  */
 abstract class Area(
-  override val id: Long,
+  override val id: Int,
   val name: String,
   val source: Area.Source.Value,
   val validity: Interval

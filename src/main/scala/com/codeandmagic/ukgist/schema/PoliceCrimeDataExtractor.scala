@@ -29,7 +29,7 @@ import org.joda.time.DateTime
  */
 object PoliceCrimeDataExtractor extends RowExtractor[PoliceCrimeData]{
   def extract(row: Row) = new PoliceCrimeData(
-    id = row.bigInt("id").get,
+    id = row.integer("id").get,
     information = InformationExtractor.extract(row),
     allCrime = row.integer("all_crime").get,
     antiSocialBehaviour = row.integer("anti_social_behavior").get,
