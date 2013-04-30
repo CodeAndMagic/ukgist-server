@@ -21,6 +21,7 @@ package com.codeandmagic.ukgist.model
 import org.joda.time.{Interval => JodaInterval, DateTime}
 import org.joda.time.format.DateTimeFormat
 import net.liftweb.util.Helpers.tryo
+import net.liftweb.json.JsonAST.{JNull, JInt, JField, JObject}
 
 /**
  * User: cvrabie
@@ -56,6 +57,13 @@ class Interval(val from:Option[DateTime], val to:Option[DateTime]) {
   }
 
   override def toString = asString
+
+  protected lazy val json = JObject(List(
+    JField("from", from.map(f=>JInt(f.getMillis)).getOrElse(JNull)),
+    JField("to", to.map(t=>JInt(t.getMillis)).getOrElse(JNull))
+  ))
+
+  def toJson = json
 }
 
 trait IntervalFactory[T <: Interval]{

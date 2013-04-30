@@ -44,7 +44,7 @@ class Information(
     JField("discriminator",Discriminator.findByDiscriminator(discriminator)
       .map(d=>JString(d.clazz.erasure.getSimpleName)).getOrElse(JNull)),
     JField("area",area.toJson),
-    JField("validity",JString(validity.toString))
+    JField("validity",validity.toJson)
   ))
   def toJson = json
 }

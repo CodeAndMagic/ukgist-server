@@ -67,7 +67,7 @@ abstract class Area(
     JField("id", JInt(id)),
     JField("name", JString(name)),
     JField("source", JString(source.toString)),
-    JField("validity", JString(validity.toString))
+    JField("validity", validity.toJson)
   )
 
   protected lazy val json = JObject(fields)
