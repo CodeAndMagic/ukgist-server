@@ -22,6 +22,9 @@ package com.codeandmagic.ukgist.model
 import org.orbroker.RowExtractor
 import scala.collection.mutable
 import net.liftweb.json.JsonAST.{JArray, JInt, JField, JObject}
+import org.clapper.classutil.ClassFinder
+import net.liftweb.common.Loggable
+import java.io.File
 
 /**
  * User: cvrabie
@@ -42,7 +45,7 @@ trait Persistent[T] extends Companion[T]{
   def extractor:RowExtractor[T]
 }
 
-object Discriminator{
+object Discriminator extends Loggable{
   val values = new mutable.HashMap[Int,Persistent[_]]() with mutable.SynchronizedMap[Int,Persistent[_]]
 
   def apply(d:Persistent[_]) = {
@@ -50,7 +53,23 @@ object Discriminator{
     values += ((id,d))
     /*return*/ id
   }
+
   def findByDiscriminator(id:Int) = values.get(id)
+
+  //A not so nice method to ensure that all discriminator classes are loaded
+  private val classFinder = ClassFinder(cp.map(new File(_)))
+  private val cp = "target/classes/com/codeandmagic/ukgist" :: "ukgist.jar" :: Nil
+  private def loadDiscriminators = {
+    val classes = classFinder.getClasses
+    val TPersistent = classOf[Persistent[_]]
+    val ds = ClassFinder.concreteSubclasses(TPersistent.getName, classes).map(c=>Class.forName(c.name)).toList
+    logger.info("Initializing discriminators. %d subclasses of %s found in classpath %s.".format(ds.size,TPersistent.getName,classFinder.classpath))
+    ds.map( cls =>{
+      logger.debug("Initialized discriminator %s".format(cls.getName))
+    })
+  }
+  val discriminators = loadDiscriminators
+
 }
 
 class Page(items:Iterable[_<:Entity], totalCount:Int, offset:Int){
@@ -58,7 +77,7 @@ class Page(items:Iterable[_<:Entity], totalCount:Int, offset:Int){
   protected lazy val json = JObject(List(
     JField("count",JInt(items.size)),
     JField("totalCount",JInt(totalCount)),
-    JField("intems",JArray(items.toList.map(_.toJson)))
+    JField("items",JArray(items.toList.map(_.toJson)))
   ))
   def toJson:JObject = json
 }

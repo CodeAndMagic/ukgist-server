@@ -43,6 +43,7 @@ libraryDependencies ++= Seq(
   "de.micromata.jak" % "JavaAPIforKml" % "2.2.0-SNAPSHOT" % "compile",
   "com.vividsolutions" % "jts" % "1.13" % "compile",
   "org.orbroker" % "orbroker_2.9.2" % "3.2.1-1" % "compile",
+  "org.clapper" %% "classutil" % "0.4.6" % "compile",
   "mysql" % "mysql-connector-java" % "5.1.24" % "runtime",
   "org.eclipse.jetty" % "jetty-webapp" % "7.6.0.RC5" % "container",
   "org.eclipse.jetty" % "jetty-servlets" % "7.6.0.RC5" % "container",

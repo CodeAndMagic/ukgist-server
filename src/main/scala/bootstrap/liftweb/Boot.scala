@@ -25,6 +25,7 @@ import com.codeandmagic.ukgist.UKGistRest
 import com.codeandmagic.ukgist.dao._
 import com.codeandmagic.ukgist.service.STRtreeAreaIndexComponent
 import net.liftweb.http.Html5Properties
+import com.codeandmagic.ukgist.model.Discriminator
 
 /*
  * WHERE ALL THE MAGIC HAPPENS
@@ -84,5 +85,8 @@ class Boot {
         HTTPParam("Access-Control-Allow-Headers", "Authorization,Keep-Alive,User-Agent,Cache-Control,Content-Type")
       ))
     */
+
+    //early load all classes that relies on discriminators so they're discoverable
+    Discriminator.discriminators
   }
 }
