@@ -56,6 +56,7 @@ trait DiscriminatorInformationExtensionDaoComponent extends MergeInformationExte
 
 trait InformationExtensionDao[T <: InformationExtension] {
   def getByInfoId(id:Int):Option[T]
+  def deleteAll():Int
 }
 
 trait PoliceCrimeDataDao extends InformationExtensionDao[PoliceCrimeData]
@@ -67,10 +68,13 @@ trait PoliceCrimeDataDaoComponent{
 trait BrokerPoliceCrimeDataDaoComponent extends PoliceCrimeDataDaoComponent{
   this:BrokerComponent =>
 
-  import com.codeandmagic.ukgist.util.withV
   class BrokerPoliceCrimeDataDao extends PoliceCrimeDataDao with Logger{
     def getByInfoId(id: Int) = broker.readOnly()(
       _.selectOne(InformationSchemaTokens.policeCrimeDataGetById, "id"->id)
+    )
+
+    def deleteAll() = broker.transaction()(
+      _.execute(InformationSchemaTokens.informationDeleteByDiscriminator, "discriminator"->PoliceCrimeData.discriminator)
     )
   }
 }

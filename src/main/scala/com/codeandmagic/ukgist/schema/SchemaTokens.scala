@@ -36,7 +36,8 @@ object PoliceAreaSchemaTokens extends TokenSet(true) {
 }
 
 object InformationSchemaTokens extends TokenSet(true){
-  val informationListAllInAreas = Token('informationListAllInAreas, InformationExtractor)
 
+  val informationListAllInAreas = Token('informationListAllInAreas, InformationExtractor)
+  val informationDeleteByDiscriminator = Token[Int]('informationDeleteByDiscriminator)
   val policeCrimeDataGetById = Token('policeCrimeDataGetById, PoliceCrimeDataExtractor)
 }

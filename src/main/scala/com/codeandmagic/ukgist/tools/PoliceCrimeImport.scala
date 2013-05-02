@@ -23,9 +23,8 @@ import net.liftweb.common.Logger
 import com.codeandmagic.ukgist.model.{Interval, Information, PoliceCrimeData}
 import java.io.File
 import scala.io.Source
-import com.codeandmagic.ukgist.dao.PoliceAreaDaoComponent
+import com.codeandmagic.ukgist.dao.{PoliceCrimeDataDaoComponent, PoliceAreaDaoComponent}
 import com.codeandmagic.ukgist.util.Dec
-import net.liftweb.util.Helpers._
 import com.codeandmagic.ukgist.util.FileOps._
 import scala.Some
 
@@ -40,7 +39,7 @@ object PoliceCrimeImport extends App{
 }
 
 trait PoliceCrimeImportToolComponent{
-  this:PoliceAreaDaoComponent =>
+  this:PoliceAreaDaoComponent with PoliceCrimeDataDaoComponent =>
 
   val policeCrimeImportTool:PoliceCrimeImportTool
 
@@ -89,7 +88,22 @@ trait PoliceCrimeImportToolComponent{
       this
     }
 
-    def clear() = null
+    val MSG_CLEAR_QUESTION="Are you sure you want to clear the database? [y/n]: "
+    val MSG_CLEAR_START="Removing from database all crime data."
+    val MSG_CLEAR_SKIPPED="Cancelled crime database deletion."
+
+    def clear(){
+      OUT.print(MSG_CLEAR_QUESTION)
+      val sure = IN.read()
+      OUT.println("\n")
+      if (sure == 'y') {
+        OUT.println(MSG_CLEAR_START)
+        policeCrimeDataDao.deleteAll()
+      }else{
+        OUT.println(MSG_CLEAR_SKIPPED)
+        throw new RuntimeException("Execution aborted")
+      }
+    }
 
     def readOne(): Seq[PoliceCrimeData] = readOne(PATH, Nil)
 

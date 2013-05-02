@@ -1,0 +1,1 @@
+DELETE FROM information WHERE discriminator=:discriminator

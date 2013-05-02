@@ -2,18 +2,20 @@ package com.codeandmagic.ukgist.tools
 
 import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
-import com.codeandmagic.ukgist.dao.{PoliceAreaDao, PoliceAreaDaoComponent}
-import com.codeandmagic.ukgist.model.{Interval, PoliceArea}
+import com.codeandmagic.ukgist.dao.{PoliceCrimeDataDao, PoliceCrimeDataDaoComponent, PoliceAreaDao, PoliceAreaDaoComponent}
+import com.codeandmagic.ukgist.model.{Area, Interval, PoliceArea}
 import com.codeandmagic.ukgist.model.Area.Source
 import com.codeandmagic.ukgist.model.Interval.FOREVER
 import org.joda.time.DateTime
+import java.io.{InputStream, PrintStream, ByteArrayOutputStream, ByteArrayInputStream}
 
 /**
  * User: cvrabie
  * Date: 02/05/2013
  */
-class PoliceCrimeImportSpec extends Specification{
+class PoliceCrimeImportSpec extends Specification with Mockito{
   import PoliceCrimeImportFixture._
+
   "PoliceCrimeImport.ONE" should{
     "correctly read the --one argument" in{
       tool(FLAG_ONE, PATH_CSV).ONE must beTrue
@@ -29,6 +31,24 @@ class PoliceCrimeImportSpec extends Specification{
 
     "be confused if both --one and --many are present" in{
       tool(FLAG_ONE, FLAG_MANY, PATH_DIR) must throwA(manifest[IllegalArgumentException])
+    }
+  }
+
+  "PoliceCrimeImport.clear()" should{
+    "ask for permission before clearing the database" in{
+      val t = tool(FLAG_ONE,FLAG_CLEAR,PATH_CSV)
+      t.clear()
+      val expected = t.MSG_CLEAR_QUESTION+"\n\n"+(t.MSG_CLEAR_START.format(Area.Source.POLICE.toString))+"\n"
+      t.OUTPUT.toString must beEqualTo(expected)
+      there was one(t.dao).deleteAll()
+    }
+
+    "abort if the permission for clearing the database is not given" in{
+      val t = tool(FLAG_ONE,FLAG_CLEAR,PATH_CSV)(new ByteArrayInputStream("n".getBytes))
+      t.clear() must throwA(manifest[RuntimeException])
+      val expected = t.MSG_CLEAR_QUESTION+"\n\n"+t.MSG_CLEAR_SKIPPED+"\n"
+      t.OUTPUT.toString must beEqualTo(expected)
+      there was no(t.dao).deleteAll()
     }
   }
 
@@ -77,7 +97,7 @@ class PoliceCrimeImportSpec extends Specification{
   }
 }
 
-object PoliceCrimeImportFixture extends Mockito{
+object PoliceCrimeImportFixture{
   val FLAG_CLEAR = "--clear"
   val FLAG_ONE = "--one"
   val FLAG_MANY = "--many"
@@ -104,15 +124,27 @@ object PoliceCrimeImportFixture extends Mockito{
   val AREA_1 = new PoliceArea(1,LINE_1_FORCE,Source.POLICE,FOREVER,LONDON_1_KML,LINE_1_FORCE,LINE_1_HOOD)
   val AREAS = AREA_1 :: Nil
 
-  def tool(args:String*) = new CrimeImportMockRegistry(args:_*).policeCrimeImportTool
+  implicit val in:InputStream = new ByteArrayInputStream("y".getBytes)
+  def tool(args:String*)(implicit is:InputStream) = new CrimeImportMockRegistry(is,args:_*).policeCrimeImportTool
   val instance = tool(PATH_DIR)
 }
 
-class CrimeImportMockRegistry(args:String*) extends Mockito with PoliceCrimeImportToolComponent with PoliceAreaDaoComponent{
-  import PoliceCrimeImportFixture._
+class CrimeImportMockRegistry(is:InputStream, args:String*) extends Mockito
+  with PoliceCrimeImportToolComponent with PoliceAreaDaoComponent with PoliceCrimeDataDaoComponent{
   val policeAreaDao = mock[PoliceAreaDao]
-  policeAreaDao.listAll().returns(AREAS)
-  val policeCrimeImportTool = new PoliceCrimeImportTool(args:_*){
+  policeAreaDao.listAll() returns(PoliceCrimeImportFixture.AREAS)
+  val policeCrimeDataDao = mock[PoliceCrimeDataDao]
+  val policeCrimeImportTool = new MockPoliceImportTool
+
+  class MockPoliceImportTool extends PoliceCrimeImportTool(args:_*){
+    val OUTPUT = new ByteArrayOutputStream()
+    val dao = policeCrimeDataDao
+    override val OUT = new PrintStream(OUTPUT)
+    override val IN =  is
+    override def apply():PoliceCrimeImportTool = {
+      super.apply()
+      this
+    }
     def testReadOne(line: String) = super.readOne(line)
   }
 }
