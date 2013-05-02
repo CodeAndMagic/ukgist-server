@@ -57,8 +57,8 @@ object Discriminator extends Loggable{
   def findByDiscriminator(id:Int) = values.get(id)
 
   //A not so nice method to ensure that all discriminator classes are loaded
+  private val cp = "target/classes/com/codeandmagic/ukgist" /*:: "ukgist.jar"*/ :: Nil
   private val classFinder = ClassFinder(cp.map(new File(_)))
-  private val cp = "target/classes/com/codeandmagic/ukgist" :: "ukgist.jar" :: Nil
   private def loadDiscriminators = {
     val classes = classFinder.getClasses
     val TPersistent = classOf[Persistent[_]]

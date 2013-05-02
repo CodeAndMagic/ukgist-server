@@ -213,12 +213,12 @@ object PoliceKmlImportFixture{
   val PATH_DIR = "src/test/resources/kmls"
 
   implicit val in:InputStream = new ByteArrayInputStream("y".getBytes)
-  def tool(args:String*)(implicit is:InputStream) =  new MockRegistry(is, args:_*).policeKmlTool
+  def tool(args:String*)(implicit is:InputStream) =  new KmlImportMockRegistry(is, args:_*).policeKmlImportTool
 }
 
-class MockRegistry(is:InputStream, args:String*) extends Mockito with PoliceKmlToolComponent with PoliceAreaDaoComponent{
+class KmlImportMockRegistry(is:InputStream, args:String*) extends Mockito with PoliceKmlToolComponent with PoliceAreaDaoComponent{
   val policeAreaDao = mock[PoliceAreaDao]
-  val policeKmlTool = new MockPoliceAreaTool
+  val policeKmlImportTool = new MockPoliceAreaTool
 
   class MockPoliceAreaTool extends PoliceKmlTool(args:_*){
     val OUTPUT = new ByteArrayOutputStream()

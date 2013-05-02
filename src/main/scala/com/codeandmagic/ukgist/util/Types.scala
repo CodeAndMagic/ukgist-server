@@ -26,5 +26,9 @@ import net.liftweb.util.Helpers._
  * Date: 27/03/2013
  */
 object Dbl{
-  def unapply(str:String):Option[Double] = tryo{str.toDouble}.toOption
+  def unapply(str:String):Option[Double] = tryo{str.trim.toDouble}.toOption
+}
+
+object Dec{
+  def unapply(str:String):Option[Int] = tryo{str.trim.toInt}.toOption
 }

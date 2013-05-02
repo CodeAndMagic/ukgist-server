@@ -74,6 +74,20 @@ abstract class Tool(val args:String*){
     this
   }
 
+  val INTERVAL_FORMAT_MESSAGE =
+    """
+      |You can specify an interval like this:
+      |D1/D2 => interval start on day D1 and ends just before D2
+      |/D2 => interval has no start and ends just before D2
+      |D1/ => interval starts on D1 and has no end
+      |D1 => interval depends on the format of D1 (see below)
+      |D1 and D2 are dates specified in either yyyy-MM-dd, yyyy-MM or yyyy formats
+      |If for example you specify an interval of 2012 this means the start is on
+      |2012-01-01T00:00:00 and the end is on 2013-01-01T00:00:00 (exclusive).
+      |If you use 2012-10-24/ this will define an interval starting on
+      |2012-10-24T00:00:00 and with no ending.
+    """.stripMargin
+
   val HELP_MESSAGE:String
   def help() = OUT.println(HELP_MESSAGE)
   def execute()

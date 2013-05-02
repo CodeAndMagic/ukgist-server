@@ -19,7 +19,6 @@
 
 package com.codeandmagic.ukgist
 
-import net.liftweb.common.Logger
 
 package object util{
   def withV[T](v: T)(f:(T)=>Any):T = { f(v); v }

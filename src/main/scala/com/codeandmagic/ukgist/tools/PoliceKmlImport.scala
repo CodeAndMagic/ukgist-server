@@ -40,17 +40,17 @@ object PoliceKmlImport extends App {
     object ComponentRegistry extends PoliceKmlToolComponent with BrokerComponent with BrokerPoliceAreaDaoComponent{
       val broker = ORBrokerFactory.fromProps()
       val policeAreaDao = new BrokerPoliceAreaDao
-      val policeKmlTool = new PoliceKmlTool(args:_*)
+      val policeKmlImportTool = new PoliceKmlTool(args:_*)
     }
 
-    ComponentRegistry.policeKmlTool.apply()
+    ComponentRegistry.policeKmlImportTool.apply()
   }
 }
 
 trait PoliceKmlToolComponent{
   this:PoliceAreaDaoComponent =>
 
-  val policeKmlTool:PoliceKmlTool
+  val policeKmlImportTool:PoliceKmlTool
 
 /**
  * Tool that inserts into the database [[com.codeandmagic.ukgist.model.PolygonArea]]s based on the KML files
@@ -88,20 +88,6 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*) with Logger
     case (_,true,None) => throw new IllegalArgumentException(PATH_MISSING)
     case (_,false,_) => null //fail silently since we're not going to use the path anyway
   }
-
-  val INTERVAL_FORMAT_MESSAGE =
-    """
-      |You can specify an interval like this:
-      |D1/D2 => interval start on day D1 and ends just before D2
-      |/D2 => interval has no start and ends just before D2
-      |D1/ => interval starts on D1 and has no end
-      |D1 => interval depends on the format of D1 (see below)
-      |D1 and D2 are dates specified in either yyyy-MM-dd, yyyy-MM or yyyy formats
-      |If for example you specify an interval of 2012 this means the start is on
-      |2012-01-01T00:00:00 and the end is on 2013-01-01T00:00:00 (exclusive).
-      |If you use 2012-10-24/ this will define an interval starting on
-      |2012-10-24T00:00:00 and with no ending.
-    """.stripMargin
 
   val VALIDITY_DESERIALIZER = (s:String) => Interval.unapply(s) match {
     case Some(interval) => interval
