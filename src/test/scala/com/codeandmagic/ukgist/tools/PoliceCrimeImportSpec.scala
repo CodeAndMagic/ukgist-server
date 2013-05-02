@@ -3,9 +3,10 @@ package com.codeandmagic.ukgist.tools
 import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
 import com.codeandmagic.ukgist.dao.{PoliceAreaDao, PoliceAreaDaoComponent}
-import com.codeandmagic.ukgist.model.PoliceArea
+import com.codeandmagic.ukgist.model.{Interval, PoliceArea}
 import com.codeandmagic.ukgist.model.Area.Source
 import com.codeandmagic.ukgist.model.Interval.FOREVER
+import org.joda.time.DateTime
 
 /**
  * User: cvrabie
@@ -47,12 +48,43 @@ class PoliceCrimeImportSpec extends Specification{
       instance.testReadOne(LINE_BROKEN) must throwA(manifest[IllegalArgumentException])
     }
   }
+
+  "PoliceCrimeImport.readOne()" should{
+    val importer = tool(FLAG_ONE, FLAG_VALID, FLAG_VALID_STR, PATH_CSV)
+    "correctly deserialize a correct CSV file" in{
+      val data = importer.readOne()
+      data.length must_==(4)
+      val first = data.head
+      first.id must_==(-1)
+      first.allCrime must_==(LINE_1_ALL_CRIME)
+      first.information.validity must_==(VALIDITY)
+      first.information.id must_==(-1)
+      val last = data.last
+      last.allCrime must_!=(LINE_1_ALL_CRIME)
+    }
+  }
+
+  "PoliceCrimeImport.readMany()" should{
+    val importer = tool(FLAG_MANY, PATH_DIR)
+    "recursively decode PoliceCrimeData from a folder with CSVs" in{
+      val data = importer.readMany()
+      data.length must_!=(4*3)
+      val first = data.head
+      first.id must_==(-1)
+      first.allCrime must_==(LINE_1_ALL_CRIME)
+      first.information.validity must_==(FOREVER)
+    }
+  }
 }
 
 object PoliceCrimeImportFixture extends Mockito{
   val FLAG_CLEAR = "--clear"
   val FLAG_ONE = "--one"
   val FLAG_MANY = "--many"
+  val FLAG_VALID = "--valid"
+
+  val FLAG_VALID_STR = "2012-12/2013-01"
+  val VALIDITY = new Interval(new DateTime(2012,12,1,0,0),new DateTime(2013,2,1,0,0))
 
   val FILE_CSV = "city-of-london"
   val PATH_CSV = "src/test/resources/"+FILE_CSV+".csv"

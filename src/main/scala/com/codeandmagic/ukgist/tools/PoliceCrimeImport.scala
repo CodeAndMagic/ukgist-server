@@ -25,6 +25,9 @@ import java.io.File
 import scala.io.Source
 import com.codeandmagic.ukgist.dao.PoliceAreaDaoComponent
 import com.codeandmagic.ukgist.util.Dec
+import net.liftweb.util.Helpers._
+import com.codeandmagic.ukgist.util.FileOps._
+import scala.Some
 
 /**
  * User: cvrabie
@@ -100,7 +103,8 @@ trait PoliceCrimeImportToolComponent{
       "Drugs,Other theft,Public disorder and weapons,Robbery,Shoplifting,Vehicle crime,Violent crime," +
       "Other crime").toLowerCase().split(",").map(_.trim).toIndexedSeq
 
-    protected def readOne(line:String):Option[PoliceCrimeData] = line.toLowerCase.split(",").map(_.trim).toIndexedSeq match {
+    protected def readOne(line:String):Option[PoliceCrimeData] = line
+      .toLowerCase.split(",").map(_.trim).toIndexedSeq match {
 
       case CSV_HEADER => {
         info("Read CSV header")
@@ -133,7 +137,17 @@ trait PoliceCrimeImportToolComponent{
       case _ => throw new IllegalArgumentException("Could not extract PoliceCrimeData from line %s".format(line))
     }
 
-    def readMany(): Seq[PoliceCrimeData] = null
+    protected def readMany(dir:File, breadcrumb:Seq[String]):Seq[PoliceCrimeData] = {
+      info("Opening dir %s".format(dir.getAbsolutePath))
+      dir.listFiles().toSeq.flatMap(file => {
+        val newBreadcrumb = breadcrumb :+ dir.getName
+        if (file.isDirectory) readMany(file,newBreadcrumb)
+        else if (file.extension==CSV_EXTENSION) readOne(file,newBreadcrumb)
+        else Seq()
+      })
+    }
+
+    def readMany(): Seq[PoliceCrimeData] = readMany(PATH, Nil)
 
     def writeAll(data: Seq[PoliceCrimeData]):Seq[PoliceCrimeData] = null
 
