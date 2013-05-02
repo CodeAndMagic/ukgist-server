@@ -31,7 +31,7 @@ import net.liftweb.json.JsonAST.{JNull, JInt, JField, JObject}
 /**
  * Wrapper on the JodaTime Interval class
  */
-class Interval(val from:Option[DateTime], val to:Option[DateTime]) {
+class Interval(val from:Option[DateTime], val to:Option[DateTime]){
   if(from.isDefined && to.isDefined && from.get.isAfter(to.get))
     throw new IllegalArgumentException("FROM can't be after TO!")
   /**
@@ -55,6 +55,17 @@ class Interval(val from:Option[DateTime], val to:Option[DateTime]) {
     }
     case _ => false
   }
+
+  def isEnclosing(that: Interval) = (this.from, that.from, this.to, that.to) match {
+    case (None,_,None,_) => true
+    case (Some(_),None,_,_) => false
+    case (_,_,Some(_),None) => false
+    case (Some(f1),Some(f2),Some(t1),Some(t2))
+      if (f1.isEqual(f2)||f1.isBefore(f2)) && (t1.isEqual(t2)||t1.isAfter(t2)) => true
+    case _ => false
+  }
+
+  def isEnclosed(that: Interval) = that.isEnclosing(this)
 
   override def toString = asString
 

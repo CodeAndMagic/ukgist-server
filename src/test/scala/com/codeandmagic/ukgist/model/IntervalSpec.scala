@@ -227,7 +227,7 @@ class IntervalSpec extends Specification{
     }
   }
 
-  "Interval('2000-01-02-2004-03-04')" should{ //no weird separator
+  "Interval('2000-01-02/2004-03-04')" should{ //no weird separator
     "be None" in{
       Interval.unapply("2000-01-02-2004-03-04") must beNone
     }
@@ -277,8 +277,60 @@ class IntervalSpec extends Specification{
     "be equal to itself" in{
       Interval.FOREVER must_== Interval.FOREVER
     }
-    "be equal to Interval('2012-01-01','2013-01-01')" in{
+    "not be equal to Interval('2012-01-01','2013-01-01')" in{
       Interval.FOREVER must_!= new Interval(new DateTime(2012,1,1,0,0),new DateTime(2013,1,1,0,0))
+    }
+  }
+
+  //ENCLOSING
+
+  "FOREVER" should{
+    "enclose Interval('2012-01-01','2013-01-01')" in{
+      Interval.FOREVER.isEnclosing(new Interval(new DateTime(2012,1,1,0,0),new DateTime(2013,1,1,0,0))) must beTrue
+    }
+
+    "enclose Interval(2012/2014)" in{
+      Interval.FOREVER.isEnclosing(new YearInterval(2012)) must beTrue
+    }
+
+    "enclose Interval(2012/)" in{
+      Interval.FOREVER.isEnclosing(new Interval(Some(new DateTime(2012,1,1,0,0)),None)) must beTrue
+    }
+
+    "enclose Interval(/2012)" in{
+      Interval.FOREVER.isEnclosing(new Interval(None,Some(new DateTime(2012,1,1,0,0)))) must beTrue
+    }
+
+    "enclose itself" in{
+      Interval.FOREVER.isEnclosing(new Interval(None,None))
+    }
+  }
+
+  "Interval(2012-1-1/2013-1-1)" should{
+    val interval = new Interval(new DateTime(2012,1,1,0,0),new DateTime(2013,1,1,0,0))
+    "enclose Interval(2012-2-2/2012-9-9)" in{
+      interval.isEnclosing(new Interval(new DateTime(2012,2,2,0,0),new DateTime(2012,9,9,0,0))) must beTrue
+    }
+
+    "NOT enclose Interval(2011-9-9/2014-9-9)" in{
+      interval.isEnclosing(new Interval(new DateTime(2011,9,9,0,0),new DateTime(2014,9,9,0,0))) must beFalse
+    }
+
+    "be enclosed in Interval(2011-9-9/2014-9-9)" in{
+      interval.isEnclosed(new Interval(new DateTime(2011,9,9,0,0),new DateTime(2014,9,9,0,0))) must beTrue
+    }
+
+    "NOT enclose Interval(2012-2-2/2014-9-9)" in{
+      interval.isEnclosing(new Interval(new DateTime(2012,2,2,0,0),new DateTime(2014,9,9,0,0))) must beFalse
+    }
+
+    "NOT be enclosed in Interval(2012-2-2/2014-9-9)" in{
+      interval.isEnclosed(new Interval(new DateTime(2012,2,2,0,0),new DateTime(2014,9,9,0,0))) must beFalse
+    }
+
+    "enclose itself" in{
+      interval.isEnclosing(interval) must beTrue
+      interval.isEnclosed(interval) must beTrue
     }
   }
 }
