@@ -44,13 +44,13 @@ libraryDependencies ++= Seq(
   "com.vividsolutions" % "jts" % "1.13" % "compile",
   "org.orbroker" % "orbroker_2.9.2" % "3.2.1-1" % "compile",
   "org.clapper" %% "classutil" % "0.4.6" % "compile",
+  "com.googlecode.flyway" % "flyway-core" % "2.1.1" % "compile",
   "mysql" % "mysql-connector-java" % "5.1.24" % "runtime",
   "org.eclipse.jetty" % "jetty-webapp" % "7.6.0.RC5" % "container",
   "org.eclipse.jetty" % "jetty-servlets" % "7.6.0.RC5" % "container",
-  "org.xerial" % "sqlite-jdbc" % "3.7.2" % "test",
-  "org.hsqldb" % "hsqldb" % "2.2.9" % "test",
-  "org.specs2" %% "specs2" % "1.12.1" % "test",
-  "org.mockito" % "mockito-all" % "1.9.0" % "test" 
+  "org.specs2" %% "specs2" % "1.12.4" % "test",
+  "org.mockito" % "mockito-all" % "1.9.0" % "test",
+  "com.h2database" % "h2" % "1.3.171" % "test"
 )
 
 /** Compilation */

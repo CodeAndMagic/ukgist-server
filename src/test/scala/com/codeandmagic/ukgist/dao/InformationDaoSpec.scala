@@ -3,17 +3,13 @@ package com.codeandmagic.ukgist.dao
 import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
 import com.codeandmagic.ukgist.model.{PoliceArea, Area}
+import com.codeandmagic.ukgist.MockBrokerComponent
 
 /**
  * User: cvrabie
  * Date: 28/04/2013
  */
 class InformationDaoSpec extends Specification{
-  object MockRegistry extends BrokerComponent with BrokerInformationDaoComponent{
-    val broker = ORBrokerFactory.apply("org.sqlite.JDBC","jdbc:sqlite:src/test/resources/sqlite/information_fixture.sqlite","","")
-    val informationDao = new BrokerInformationDao
-  }
-
   import InformationDaoFixture._
   "InformationDao" should{
     val infos = MockRegistry.informationDao.listAllInAreas(INFO_AREA_LIST)
@@ -27,6 +23,11 @@ class InformationDaoSpec extends Specification{
 
 object InformationDaoFixture extends Mockito{
   PoliceArea.discriminator //for discriminator assignment
+
+  object MockRegistry extends MockBrokerComponent("test_info_read","db_fixture/crime") with BrokerInformationDaoComponent{
+    val informationDao = new BrokerInformationDao
+  }
+
   val INFO_AREA_1_ID = 456
   val INFO_AREA_2_ID = 567
   val INFO_AREA_3_ID = 678

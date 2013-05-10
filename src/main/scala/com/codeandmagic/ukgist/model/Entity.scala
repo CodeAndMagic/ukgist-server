@@ -50,6 +50,7 @@ object Discriminator extends Loggable{
 
   def apply(d:Persistent[_]) = {
     val id = d.getClass.getName.hashCode
+    logger.debug("Discriminator for %s is %d".format(d.getClass.getName,id))
     values += ((id,d))
     /*return*/ id
   }

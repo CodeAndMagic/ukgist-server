@@ -24,9 +24,11 @@ import net.liftweb.util.Props
 import java.io.{PrintWriter, File}
 import org.orbroker.config.{FileSystemRegistrant, BrokerConfig, SimpleDataSource}
 import com.codeandmagic.ukgist.util.{LogLevel, LogPrintWriter}
-import com.codeandmagic.ukgist.schema.PoliceAreaSchemaTokens
-import net.liftweb.common.{Failure, Full}
+import com.codeandmagic.ukgist.schema.{InformationSchemaTokens, PoliceAreaSchemaTokens}
+import net.liftweb.common.{Loggable, Failure, Full}
 import scala.Exception
+import scala.io.Source
+import java.sql.Connection
 
 /**
  * User: cvrabie
@@ -35,7 +37,7 @@ import scala.Exception
 trait BrokerComponent {
   val broker:Broker
 }
-object ORBrokerFactory{
+object ORBrokerFactory extends Loggable{
   def fromProps() = (for{
     dbDriver <- Props.get("db.driver") ?~! "Need the db.driver property"
     dbUrl <- Props.get("db.url") ?~! "Need the db.url property"
@@ -55,6 +57,16 @@ object ORBrokerFactory{
     brokerConfig.setUser(dbUser, dbPass)
     FileSystemRegistrant(configFolder).register(brokerConfig)
     brokerConfig.verify(PoliceAreaSchemaTokens.idSet)
+    brokerConfig.verify(InformationSchemaTokens.idSet)
     Broker(brokerConfig)
   }
+
+  private def loadSQL(relativePath:String) = {
+    val file = Thread.currentThread().getContextClassLoader().getResource(relativePath).getPath
+    val source = Source.fromFile(file)
+    val builder = new StringBuilder
+    source.getLines().foreach(builder.append(_))
+    builder.toString()
+  }
+
 }

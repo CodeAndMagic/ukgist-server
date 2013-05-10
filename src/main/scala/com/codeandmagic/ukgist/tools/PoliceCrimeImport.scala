@@ -137,7 +137,7 @@ trait PoliceCrimeImportToolComponent{
 
           case Some(area) => {
             val info = new Information(id = -1, PoliceCrimeData.discriminator, area, VALIDITY)
-            Some(new PoliceCrimeData(id = -1, information = info, allCrime = v1, antiSocialBehaviour = v2, burglary = v3,
+            Some(new PoliceCrimeData(id = -1, information = info, allCrime = v1, antiSocialBehavior = v2, burglary = v3,
             criminalDamage = v4, drugs = v5, otherTheft = v6, publicDisorder = v7, robbery = v8, shoplifting = v9,
             vehicleCrime = v10, violentCrime = v11, otherCrime = v12))
           }
@@ -163,7 +163,7 @@ trait PoliceCrimeImportToolComponent{
 
     def readMany(): Seq[PoliceCrimeData] = readMany(PATH, Nil)
 
-    def writeAll(data: Seq[PoliceCrimeData]):Seq[PoliceCrimeData] = null
+    def writeAll(data: Seq[PoliceCrimeData]):Seq[PoliceCrimeData] = policeCrimeDataDao.saveAll(data)
 
     def execute() {
       if(CLEAR) clear()

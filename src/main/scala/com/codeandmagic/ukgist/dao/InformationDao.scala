@@ -3,6 +3,9 @@ package com.codeandmagic.ukgist.dao
 import com.codeandmagic.ukgist.model._
 import com.codeandmagic.ukgist.schema.InformationSchemaTokens
 import net.liftweb.common.Logger
+import scala.collection.mutable
+import org.orbroker.Transaction
+import java.sql.Connection
 
 /**
  * User: cvrabie
@@ -10,6 +13,7 @@ import net.liftweb.common.Logger
  */
 trait InformationDao {
   def listAllInAreas(areas:Seq[_<:Area]):Seq[Information]
+  def saveAll(data: Seq[Information], transaction: Transaction):Seq[Information]
 }
 
 trait InformationDaoComponent{
@@ -28,6 +32,9 @@ trait BrokerInformationDaoComponent extends InformationDaoComponent{
       val ids = params.zip(areas.map(_.id))
       broker.selectAll(InformationSchemaTokens.informationListAllInAreas, ids:_*)
     })
+
+    def saveAll(info: Seq[Information], tx: Transaction) =
+      Dao.saveAll(classOf[Information], tx, InformationSchemaTokens.informationSaveAll, "info", info)(this)
   }
 }
 
@@ -57,16 +64,20 @@ trait DiscriminatorInformationExtensionDaoComponent extends MergeInformationExte
 trait InformationExtensionDao[T <: InformationExtension] {
   def getByInfoId(id:Int):Option[T]
   def deleteAll():Int
+  def saveAll(data:Seq[T]):Seq[T]
 }
 
-trait PoliceCrimeDataDao extends InformationExtensionDao[PoliceCrimeData]
+trait PoliceCrimeDataDao extends InformationExtensionDao[PoliceCrimeData] {
+  def getByInfoId(id: Int):Option[PoliceCrimeData]
+  def saveAll(data: Seq[PoliceCrimeData]): Seq[PoliceCrimeData]
+}
 
 trait PoliceCrimeDataDaoComponent{
   val policeCrimeDataDao:PoliceCrimeDataDao
 }
 
 trait BrokerPoliceCrimeDataDaoComponent extends PoliceCrimeDataDaoComponent{
-  this:BrokerComponent =>
+  this:BrokerComponent with InformationDaoComponent =>
 
   class BrokerPoliceCrimeDataDao extends PoliceCrimeDataDao with Logger{
     def getByInfoId(id: Int) = broker.readOnly()(
@@ -76,5 +87,24 @@ trait BrokerPoliceCrimeDataDaoComponent extends PoliceCrimeDataDaoComponent{
     def deleteAll() = broker.transaction()(
       _.execute(InformationSchemaTokens.informationDeleteByDiscriminator, "discriminator"->PoliceCrimeData.discriminator)
     )
+
+    def saveAll(data: Seq[PoliceCrimeData]) = broker.transaction()(saveAll(data,_))
+
+    //cascade save. first all information then all crime data
+    def saveAll(data: Seq[PoliceCrimeData], tx:Transaction) =
+      saveAllCrimeData(saveAllInformation(data,tx),tx)
+
+    //TODO we create way too many temporary objects in this method!!!
+    //TODO we save a new information object even if it already has an id. probably should use a REPLACE
+    protected def saveAllInformation(data:Seq[PoliceCrimeData], tx:Transaction) = {
+      val infoToSave = data.map(_.information)
+      val savedInfo = informationDao.saveAll(infoToSave,tx)
+      (data,savedInfo).zipped.map({
+        case (d:PoliceCrimeData, i:Information) => d.copyWithInformation(i)
+      }).toSeq
+    }
+
+    protected def saveAllCrimeData(data: Seq[PoliceCrimeData], tx:Transaction) =
+      Dao.saveAll(classOf[PoliceCrimeData],tx, InformationSchemaTokens.policeCrimeDataSaveAll, "data", data)(this)
   }
 }

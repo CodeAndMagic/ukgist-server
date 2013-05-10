@@ -21,51 +21,26 @@ package com.codeandmagic.ukgist.dao
 
 import org.specs2.mutable.Specification
 import com.codeandmagic.ukgist.model.PolygonAreaFixture._
-import PoliceAreaDaoFixture._
+import com.codeandmagic.ukgist.dao.PoliceAreaDaoFixture._
 import com.codeandmagic.ukgist.model.{PoliceArea, KmlPolygonArea, Area}
 import org.joda.time.DateTime
 import org.orbroker.Row
 import java.sql.Timestamp
-import com.codeandmagic.ukgist.schema.PoliceAreaExtractor
 import net.liftweb.common.Logger
-import java.io._
 import scala.Some
+import com.codeandmagic.ukgist.schema.PoliceAreaExtractor
 import com.codeandmagic.ukgist.util.InvalidKmlException
+import com.codeandmagic.ukgist.{MockBrokerComponent, DatabaseMock}
 
 /**
  * User: cvrabie
  * Date: 25/03/2013
  */
-class PoliceAreaDaoSpec extends Specification with Logger{
+class PoliceAreaDaoSpec extends Specification with Logger {
 
-  object ReadMockRegistry extends BrokerComponent with BrokerPoliceAreaDaoComponent{
-    val broker = ORBrokerFactory.apply("org.sqlite.JDBC","jdbc:sqlite:src/test/resources/sqlite/area_fixture.sqlite","","")
-    //val broker = ORBrokerFactory.apply("org.sqlite.JDBC","jdbc:hsqldb:file:src/test/resources/sqlite/area_fixture.sql;ifexists=false;shutdown=true","","")
-    val policeAreaDao = new BrokerPoliceAreaDao
-  }
+  "PoliceAreaDao(read)" should{
 
-  object WriteMockRegistry extends BrokerComponent with BrokerPoliceAreaDaoComponent{
-    val database = makeDatabaseFile()
-    val broker = ORBrokerFactory.apply("org.sqlite.JDBC","jdbc:sqlite:"+database,"","")
-    //val broker = ORBrokerFactory.apply("org.sqlite.JDBC","jdbc:hsqldb:file:"+database+";ifexists=false;shutdown=true","","")
-    val policeAreaDao = new BrokerPoliceAreaDao
-
-
-    def makeDatabaseFile() = {
-      val templatePath = Thread.currentThread().getContextClassLoader().getResource("sqlite/area_fixture.sqlite").getPath
-      //val templatePath = Thread.currentThread().getContextClassLoader().getResource("sqlite/area_fixture.sql").getPath
-      val templateStream = new FileInputStream(templatePath)
-      //val databaseFile = new File(System.getProperty("java.io.tmpdir"),"area.sqlite")
-      val databaseFile = new File(System.getProperty("java.io.tmpdir"),"area.sql")
-      databaseFile.createNewFile()
-      val databaseStream = new FileOutputStream(databaseFile, false)
-      databaseStream.getChannel.transferFrom(templateStream.getChannel,0,Long.MaxValue) //copy file
-      databaseFile.getAbsolutePath
-    }
-  }
-
-  "PoliceAreaDao(area_fixture.sqlite)" should{
-    val all = ReadMockRegistry.policeAreaDao.listAll()
+    val all = MockReadRegistry.policeAreaDao.listAll()
 
     "list all items in the database" in{
       all.size must be_==(2)
@@ -85,15 +60,27 @@ class PoliceAreaDaoSpec extends Specification with Logger{
     }
 
     "correctly save a batch of Areas" in{
-      val toSave = LONDON_1_POLICE_AREA :: Nil
-      val saved = WriteMockRegistry.policeAreaDao.saveAll(toSave)
+      //cannot test batch insert IN H2 with more than one item because getGeneratedKeys only returns the last one
+      //although this works in MySQL @see https://code.google.com/p/h2database/issues/detail?id=357
+      val toSave = /*LONDON_2_POLICE_AREA ::*/ LONDON_1_POLICE_AREA :: Nil
+      val saved = MockWriteRegistry.policeAreaDao.saveAll(toSave)
       saved.size must beEqualTo(toSave.length)
       saved(0).id must be_>(0) and be_!=(toSave(0).id)
+      MockWriteRegistry.policeAreaDao.listAll().size must_==(toSave.length)
     }
   }
 }
 
 object PoliceAreaDaoFixture{
+
+  object MockReadRegistry extends MockBrokerComponent("test_area_read","db_fixture/areas") with BrokerPoliceAreaDaoComponent{
+    val policeAreaDao = new BrokerPoliceAreaDao
+  }
+
+  object MockWriteRegistry extends MockBrokerComponent("test_area_write") with BrokerPoliceAreaDaoComponent{
+    val policeAreaDao = new BrokerPoliceAreaDao
+  }
+
   def mockKmlRow(id:Int, name:String, source:Area.Source.Value, bytes:Array[Byte], from:DateTime, to:DateTime) = {
     val row = mock[Row]
     row.integer("area_id") returns Some(id)
@@ -121,6 +108,11 @@ object PoliceAreaDaoFixture{
 
   val LONDON_1_POLICE_AREA = new PoliceArea(
     id = -1, name=LONDON_1_AREA_NAME, source=LONDON_1_AREA_SOURCE, validity=LONDON_1_AREA_VALIDITY, kml=LONDON_1_KML,
+    policeForce = LONDON_1_FORCE, policeNeighborhood = LONDON_1_NEIGHBORHOOD
+  )
+
+  val LONDON_2_POLICE_AREA = new PoliceArea(
+    id = -2, name="other", source=LONDON_1_AREA_SOURCE, validity=LONDON_1_AREA_VALIDITY, kml=LONDON_1_KML,
     policeForce = LONDON_1_FORCE, policeNeighborhood = LONDON_1_NEIGHBORHOOD
   )
 }

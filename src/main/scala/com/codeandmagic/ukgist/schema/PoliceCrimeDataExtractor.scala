@@ -32,7 +32,7 @@ object PoliceCrimeDataExtractor extends RowExtractor[PoliceCrimeData]{
     id = row.integer("infox_id").get,
     information = InformationExtractor.extract(row),
     allCrime = row.integer("infox_all_crime").get,
-    antiSocialBehaviour = row.integer("infox_anti_social_behavior").get,
+    antiSocialBehavior = row.integer("infox_anti_social_behavior").get,
     burglary = row.integer("infox_burglary").get,
     criminalDamage = row.integer("infox_criminal_damage").get,
     drugs = row.integer("infox_drugs").get,

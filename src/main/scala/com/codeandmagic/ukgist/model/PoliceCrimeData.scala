@@ -30,7 +30,7 @@ class PoliceCrimeData(
   override val id:Int,
   override val information: Information,
   val allCrime:Int,
-  val antiSocialBehaviour:Int,
+  val antiSocialBehavior:Int,
   val burglary:Int,
   val criminalDamage:Int,
   val drugs:Int,
@@ -44,7 +44,12 @@ class PoliceCrimeData(
 ) extends InformationExtension(id, information){
 
   def copyWithId(newId: Int) = new PoliceCrimeData( id = newId, information=information, allCrime = allCrime,
-    antiSocialBehaviour = antiSocialBehaviour, burglary = burglary, criminalDamage = criminalDamage, drugs = drugs,
+    antiSocialBehavior = antiSocialBehavior, burglary = burglary, criminalDamage = criminalDamage, drugs = drugs,
+    otherTheft = otherTheft, publicDisorder = publicDisorder, robbery = robbery, shoplifting = shoplifting,
+    vehicleCrime = vehicleCrime, violentCrime = violentCrime, otherCrime = otherCrime)
+
+  def copyWithInformation(newInfo: Information) = new PoliceCrimeData( id = id, information=newInfo, allCrime = allCrime,
+    antiSocialBehavior = antiSocialBehavior, burglary = burglary, criminalDamage = criminalDamage, drugs = drugs,
     otherTheft = otherTheft, publicDisorder = publicDisorder, robbery = robbery, shoplifting = shoplifting,
     vehicleCrime = vehicleCrime, violentCrime = violentCrime, otherCrime = otherCrime)
 
@@ -52,7 +57,7 @@ class PoliceCrimeData(
 
   override protected def fields = super.fields ++ List(
     JField("allCrime",JInt(allCrime)),
-    JField("antiSocialBehaviour",JInt(antiSocialBehaviour)),
+    JField("antiSocialBehaviour",JInt(antiSocialBehavior)),
     JField("burglary",JInt(burglary)),
     JField("criminalDamage",JInt(criminalDamage)),
     JField("drugs",JInt(drugs)),

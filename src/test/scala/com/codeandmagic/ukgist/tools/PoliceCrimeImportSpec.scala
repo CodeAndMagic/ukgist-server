@@ -58,7 +58,7 @@ class PoliceCrimeImportSpec extends Specification with Mockito{
       maybeCrime must beSome
       val crime = maybeCrime.get
       crime.allCrime must_==(LINE_1_ALL_CRIME)
-      crime.antiSocialBehaviour must_==(LINE_1_ANTI_SOCIAL)
+      crime.antiSocialBehavior must_==(LINE_1_ANTI_SOCIAL)
       crime.otherCrime must_==(LINE_1_OTHER)
     }
     "does not choke on the header line" in{

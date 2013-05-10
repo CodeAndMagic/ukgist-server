@@ -77,25 +77,8 @@ trait BrokerPoliceAreaDaoComponent extends PoliceAreaDaoComponent{
 
     def saveAll(areas: Seq[PoliceArea]) = broker.transaction()(saveAll(areas,_))
 
-    protected def saveAll(areas: Seq[PoliceArea], tx:Transaction):Seq[PoliceArea] = {
-      val keys = mutable.ArrayBuffer[Int]()
-      try{
-        debug("Batch save %d PoliceAreas".format(areas.length))
-        //UGLY HACK BECAUSE MYSQL RETURN LONG GENERATED KEY FOR INT COLUMN
-        //@see http://dev.mysql.com/doc/refman/5.5/en/information-functions.html#function_last-insert-id
-        val func = ((x:Number)=> keys += x.intValue()).asInstanceOf[Int=>Unit]
-        tx.executeBatchForKeys(PoliceAreaSchemaTokens.policeAreaSaveAll, ("area", areas))(func)
-        debug("Got back %d keys".format(keys.length))
-        val saved = (areas, keys).zipped.map((a:PoliceArea, i:Int) => a.copyWithId(i))
-        if(saved.size != areas.size) throw new RuntimeException("Sent %d but saved %d".format(areas.size,saved.size))
-        saved.toSeq
-      }catch {
-        case e => {
-          error("Error saving batch of PoliceAreas. Cause: ",e)
-          throw e //ORBroker should rollback at this point
-        }
-      }
-    }
+    protected def saveAll(areas: Seq[PoliceArea], tx:Transaction):Seq[PoliceArea] =
+      Dao.saveAll(classOf[PoliceArea],tx,PoliceAreaSchemaTokens.policeAreaSaveAll,"area",areas)(this)
   }
 
 }
