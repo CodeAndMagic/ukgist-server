@@ -69,8 +69,8 @@ abstract class Tool(val args:String*){
   }
 
   def apply():Tool = {
-    if (args.size > 0) execute()
-    else help()
+    if (args.size == 0 || (args.size == 1 && args(0) == "--help")) help()
+    else execute()
     this
   }
 

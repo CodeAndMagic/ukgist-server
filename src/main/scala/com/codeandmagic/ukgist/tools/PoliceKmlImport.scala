@@ -83,6 +83,7 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*) with Logger
 
   private[tools] val PATH_MISSING = "You need to specify a file or folder path as the last argument."
   val PATH:File = (ONE,args.length>0,args.lastOption) match {
+    case (_,true,Some("--help")) => null
     case (true,true,Some(path)) => KML_FILE_PATH_DESERIALIZER(path)
     case (false,true,Some(path)) => folderDeserializer(path)
     case (_,true,None) => throw new IllegalArgumentException(PATH_MISSING)

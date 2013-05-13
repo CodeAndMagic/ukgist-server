@@ -23,7 +23,7 @@ import net.liftweb.common.Logger
 import com.codeandmagic.ukgist.model.{Interval, Information, PoliceCrimeData}
 import java.io.File
 import scala.io.Source
-import com.codeandmagic.ukgist.dao.{PoliceCrimeDataDaoComponent, PoliceAreaDaoComponent}
+import com.codeandmagic.ukgist.dao._
 import com.codeandmagic.ukgist.util.Dec
 import com.codeandmagic.ukgist.util.FileOps._
 import scala.Some
@@ -35,6 +35,17 @@ import scala.Some
 object PoliceCrimeImport extends App{
   override def main(args: Array[String]) {
     super.main(args)
+
+    object ComponentRegistry extends PoliceCrimeImportToolComponent with BrokerComponent
+    with BrokerPoliceAreaDaoComponent with BrokerPoliceCrimeDataDaoComponent with BrokerInformationDaoComponent{
+      val broker = ORBrokerFactory.fromProps()
+      val policeAreaDao = new BrokerPoliceAreaDao
+      val informationDao = new BrokerInformationDao
+      val policeCrimeDataDao = new BrokerPoliceCrimeDataDao
+      val policeCrimeImportTool = new PoliceCrimeImportTool(args:_*)
+    }
+
+    ComponentRegistry.policeCrimeImportTool.apply()
   }
 }
 
@@ -63,6 +74,7 @@ trait PoliceCrimeImportToolComponent{
 
     private[tools] val PATH_MISSING = "You need to specify a file or folder path as the last argument."
     val PATH:File = (ONE,args.length>0,args.lastOption) match {
+      case (_,true,Some("--help")) => null
       case (true,true,Some(path)) => CSV_FILE_PATH_DESERIALIZER(path)
       case (false,true,Some(path)) => folderDeserializer(path)
       case (_,true,None) => throw new IllegalArgumentException(PATH_MISSING)
@@ -70,7 +82,11 @@ trait PoliceCrimeImportToolComponent{
     }
 
     info("Fetching all police PoliceAreas")
-    val AREAS = policeAreaDao.listAll()
+    val AREAS = args match {
+      case Seq() => Seq.empty
+      case Seq("--help") => Seq()
+      case _ => policeAreaDao.listAll()
+    }
     info("Found %d areas".format(AREAS.size))
 
     val HELP_MESSAGE =
