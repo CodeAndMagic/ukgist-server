@@ -23,7 +23,7 @@ import com.codeandmagic.ukgist.model.{PoliceArea, Area}
 import net.liftweb.common.Logger
 import com.codeandmagic.ukgist.schema.{PoliceAreaSchemaTokens}
 import org.orbroker.Transaction
-import scala.collection.mutable
+import scala.collection.immutable.Stream
 
 /**
  * User: cvrabie
@@ -67,9 +67,19 @@ trait BrokerPoliceAreaDaoComponent extends PoliceAreaDaoComponent{
       _.selectOne(PoliceAreaSchemaTokens.policeAreaGetById, "id"->id)
     )
 
-    def listAll() = broker.readOnly()(
-      _.selectAll(PoliceAreaSchemaTokens.policeAreaListAll)
+    def listBatch(limit:Int, offset:Int) = broker.readOnly()(
+      _.selectAll(PoliceAreaSchemaTokens.policeAreaListBatch,"limit"->limit,"offset"->offset)
     )
+
+    private def batchStream(limit:Int, offset:Int):Stream[IndexedSeq[PoliceArea]] = {
+      val batch = listBatch(limit,offset)
+      debug("BatchStream[%d,%d] got %d PoliceAreas".format(limit,offset,batch.size))
+      batch
+    } #:: batchStream(limit, offset+limit)
+
+    val BATCH_SIZE = 100
+
+    def listAll() = batchStream(BATCH_SIZE, 0).takeWhile(_.size>0).flatten
 
     def deleteBySource(source: Area.Source.Value) = broker.transaction()(
       _.execute(PoliceAreaSchemaTokens.policeAreaDeleteBySource, "source"->source)

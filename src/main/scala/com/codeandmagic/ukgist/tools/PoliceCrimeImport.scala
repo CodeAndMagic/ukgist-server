@@ -123,17 +123,29 @@ trait PoliceCrimeImportToolComponent{
 
     def readOne(): Seq[PoliceCrimeData] = readOne(PATH, Nil)
 
+    val FNAMEREG = "[0-9]+\\-[0-9]+\\-([0-9a-zA-Z_-]+)\\-neighbourhood".r
+
     protected def readOne(file:File, breadcrumb:Seq[String]):Seq[PoliceCrimeData] = {
       info("Reading %s".format(file.getAbsolutePath))
+      val policeForce = file.getName match {
+        case FNAMEREG(policeForceFromFileName) => {
+          debug("File name says that police force is '%s'".format(policeForceFromFileName))
+          Some(policeForceFromFileName.toLowerCase())
+        }
+        case _ => {
+          warn("Could not deduce police force from file name")
+          None
+        }
+      }
       val src = Source.fromFile(file)
-      src.getLines().flatMap( readOne(_) ).toSeq
+      src.getLines().flatMap( readOne(policeForce,_) ).toSeq
     }
 
     val CSV_HEADER = ("Month,Force,Neighbourhood,All crime,Anti-social behaviour,Burglary,Criminal damage and arson," +
       "Drugs,Other theft,Public disorder and weapons,Robbery,Shoplifting,Vehicle crime,Violent crime," +
       "Other crime").toLowerCase().split(",").map(_.trim).toIndexedSeq
 
-    protected def readOne(line:String):Option[PoliceCrimeData] = line
+    protected def readOne(policeForceFromFileName:Option[String], line:String):Option[PoliceCrimeData] = line
       .toLowerCase.split(",").map(_.trim).toIndexedSeq match {
 
       case CSV_HEADER => {
@@ -141,12 +153,14 @@ trait PoliceCrimeImportToolComponent{
         None
       }
 
-      case IndexedSeq(date, policeForce, policeNeighborhood, Dec(v1), Dec(v2), Dec(v3), Dec(v4), Dec(v5), Dec(v6), Dec(v7),
+      case IndexedSeq(date, policeForceFromLine, policeNeighborhood, Dec(v1), Dec(v2), Dec(v3), Dec(v4), Dec(v5), Dec(v6), Dec(v7),
         Dec(v8), Dec(v9), Dec(v10), Dec(v11), Dec(v12)) => {
 
         info("Read CSV line matching the PoliceCrimeData format")
+        val policeForce = policeForceFromFileName.getOrElse(policeForceFromLine)
+
         AREAS.filter( a =>
-          a.policeForce.toLowerCase == policeForce &&
+         a.policeForce.toLowerCase == policeForce &&
           a.policeNeighborhood.toLowerCase == policeNeighborhood &&
           a.validity.isEnclosing(VALIDITY)
         ).headOption match {

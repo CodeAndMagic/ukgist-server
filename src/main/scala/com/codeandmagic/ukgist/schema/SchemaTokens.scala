@@ -30,7 +30,7 @@ import org.orbroker.conv.JodaDateTimeConv
 
 object PoliceAreaSchemaTokens extends TokenSet(true) {
   val policeAreaGetById = Token('policeAreaGetById, PoliceAreaExtractor)
-  val policeAreaListAll = Token('policeAreaListAll, PoliceAreaExtractor)
+  val policeAreaListBatch = Token('policeAreaListBatch, PoliceAreaExtractor)
   val policeAreaDeleteBySource = Token[Int]('policeAreaDeleteBySource, AreaSourceConv)
   val policeAreaSaveAll = Token[Int]('policeAreaSaveAll, JodaDateTimeConv, AreaSourceConv, KmlConv)
 }
