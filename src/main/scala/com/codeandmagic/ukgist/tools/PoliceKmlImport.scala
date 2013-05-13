@@ -28,6 +28,8 @@ import de.micromata.opengis.kml.v_2_2_0.Kml
 import net.liftweb.common.Logger
 import com.codeandmagic.ukgist.dao._
 import scala.Some
+import java.util.concurrent.LinkedBlockingQueue
+import java.util
 
 /**
  * User: cvrabie
@@ -56,11 +58,14 @@ trait PoliceKmlToolComponent{
  * Tool that inserts into the database [[com.codeandmagic.ukgist.model.PolygonArea]]s based on the KML files
  * provided by the Police Data website http://www.police.uk/data
  */
-class PoliceKmlTool(override val args:String*) extends Tool(args:_*) with Logger{
+class PoliceKmlTool(args:String*) extends ProducerConsumerTool[PoliceArea](args:_*) with Logger{
   val REQUIRED_PARAMETERS = 1
+
+  val cls = classOf[PoliceArea]
 
   if (args.contains("--one") && args.contains("--many"))
     throw new IllegalArgumentException("Do you want --one or --many?")
+
   val ONE = args.contains("--one")
   val CLEAR = args.contains("--clear")
 
@@ -114,12 +119,9 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*) with Logger
     this
   }
 
-  def execute(){
+  override def execute() {
     if(CLEAR) clear()
-    val areas = if(ONE) readOne()::Nil else readMany()
-    info("Imported %d areas".format(areas.length))
-    val saved = writeAll(areas)
-    info("Wrote %d areas to database".format(saved.length))
+    super.execute()
   }
 
   val MSG_CLEAR_QUESTION="Are you sure you want to clear the database? [y/n]: "
@@ -139,31 +141,36 @@ class PoliceKmlTool(override val args:String*) extends Tool(args:_*) with Logger
     }
   }
 
-  def readOne():PoliceArea = readOne(PATH, Nil)
+  def readOne(){
+    readOne(PATH, Nil)
+  }
 
-  protected def readOne(file:File, breadcrumb:Seq[String]):PoliceArea = {
+  protected def readOne(file:File, breadcrumb:Seq[String]){
     val dash = if (PREFIX.isEmpty && breadcrumb.isEmpty) "" else "-"
     val path = breadcrumb.foldLeft(new StringBuilder)((sb,b)=> if(sb.isEmpty) sb.append(b) else sb.append("-").append(b))
     val basename = file.nameWithoutExtension
     val name = PREFIX + path + dash + basename
     val policeForce = breadcrumb.lastOption.getOrElse("")
     info("Reading %s".format(file.getAbsolutePath))
-    new PoliceArea(-1, name, SOURCE, VALIDITY, Kml.unmarshal(file),policeForce,basename)
+    QUEUE.put(
+      new PoliceArea(-1, name, SOURCE, VALIDITY, Kml.unmarshal(file),policeForce,basename)
+    )
   }
 
-  def readMany():Seq[PoliceArea] = readMany(PATH, Nil)
+  def readMany(){ readMany(PATH, Nil) }
 
-  protected def readMany(dir:File, breadcrumb:Seq[String]):Seq[PoliceArea] = {
+  protected def readMany(dir:File, breadcrumb:Seq[String]) {
     info("Opening dir %s".format(dir.getAbsolutePath))
-    dir.listFiles().toSeq.flatMap(file => {
+    dir.listFiles().toSeq.foreach(file => {
       val newBreadcrumb = breadcrumb :+ dir.getName
       if (file.isDirectory) readMany(file,newBreadcrumb)
-      else if (file.extension==KML_EXTENSION) tryo{ readOne(file,newBreadcrumb) }.toSeq
-      else Seq()
+      else if (file.extension==KML_EXTENSION) tryo{
+        readOne(file,newBreadcrumb)
+      }
     })
   }
 
-  def writeAll(areas:Seq[PoliceArea]) = policeAreaDao.saveAll(areas)
+  def processBatch(items: Seq[PoliceArea]) = policeAreaDao.saveAll(items)
 }
 }
 

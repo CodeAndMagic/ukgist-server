@@ -20,13 +20,14 @@
 package com.codeandmagic.ukgist.tools
 
 import net.liftweb.common.Logger
-import com.codeandmagic.ukgist.model.{Interval, Information, PoliceCrimeData}
+import com.codeandmagic.ukgist.model.{PoliceArea, Interval, Information, PoliceCrimeData}
 import java.io.File
 import scala.io.Source
 import com.codeandmagic.ukgist.dao._
 import com.codeandmagic.ukgist.util.Dec
 import com.codeandmagic.ukgist.util.FileOps._
 import scala.Some
+import java.util.concurrent.LinkedBlockingQueue
 
 /**
  * User: cvrabie
@@ -54,11 +55,13 @@ trait PoliceCrimeImportToolComponent{
 
   val policeCrimeImportTool:PoliceCrimeImportTool
 
-  class PoliceCrimeImportTool(override val args:String*) extends Tool(args:_*) with Logger{
+  class PoliceCrimeImportTool(args:String*) extends ProducerConsumerTool[PoliceCrimeData](args:_*) with Logger{
     val REQUIRED_PARAMETERS = 1
 
+    val cls = classOf[PoliceCrimeData]
+
     if (args.contains("--one") && args.contains("--many"))
-      throw new IllegalArgumentException("Do you want --one or --many?")
+    throw new IllegalArgumentException("Do you want --one or --many?")
     val ONE = args.contains("--one")
     val CLEAR = args.contains("--clear")
 
@@ -121,11 +124,13 @@ trait PoliceCrimeImportToolComponent{
       }
     }
 
-    def readOne(): Seq[PoliceCrimeData] = readOne(PATH, Nil)
+    def readOne(){
+      readOne(PATH, Nil)
+    }
 
     val FNAMEREG = "[0-9]+\\-[0-9]+\\-([0-9a-zA-Z_-]+)\\-neighbourhood".r
 
-    protected def readOne(file:File, breadcrumb:Seq[String]):Seq[PoliceCrimeData] = {
+    protected def readOne(file:File, breadcrumb:Seq[String]){
       info("Reading %s".format(file.getAbsolutePath))
       val policeForce = file.getName match {
         case FNAMEREG(policeForceFromFileName) => {
@@ -138,23 +143,19 @@ trait PoliceCrimeImportToolComponent{
         }
       }
       val src = Source.fromFile(file)
-      src.getLines().flatMap( readOne(policeForce,_) ).toSeq
+      src.getLines().foreach( readOne(policeForce,_) )
     }
 
     val CSV_HEADER = ("Month,Force,Neighbourhood,All crime,Anti-social behaviour,Burglary,Criminal damage and arson," +
       "Drugs,Other theft,Public disorder and weapons,Robbery,Shoplifting,Vehicle crime,Violent crime," +
       "Other crime").toLowerCase().split(",").map(_.trim).toIndexedSeq
 
-    protected def readOne(policeForceFromFileName:Option[String], line:String):Option[PoliceCrimeData] = line
-      .toLowerCase.split(",").map(_.trim).toIndexedSeq match {
+    protected def readOne(policeForceFromFileName:Option[String], line:String){
+      line.toLowerCase.split(",").map(_.trim).toIndexedSeq match {
 
-      case CSV_HEADER => {
-        info("Read CSV header")
-        None
-      }
+      case CSV_HEADER => info("Read CSV header")
 
-      case IndexedSeq(date, policeForceFromLine, policeNeighborhood, Dec(v1), Dec(v2), Dec(v3), Dec(v4), Dec(v5), Dec(v6), Dec(v7),
-        Dec(v8), Dec(v9), Dec(v10), Dec(v11), Dec(v12)) => {
+      case IndexedSeq(date, policeForceFromLine, policeNeighborhood, Dec(v1), Dec(v2), Dec(v3), Dec(v4), Dec(v5), Dec(v6), Dec(v7), Dec(v8), Dec(v9), Dec(v10), Dec(v11), Dec(v12)) => {
 
         info("Read CSV line matching the PoliceCrimeData format")
         val policeForce = policeForceFromFileName.getOrElse(policeForceFromLine)
@@ -167,9 +168,10 @@ trait PoliceCrimeImportToolComponent{
 
           case Some(area) => {
             val info = new Information(id = -1, PoliceCrimeData.discriminator, area, VALIDITY)
-            Some(new PoliceCrimeData(id = -1, information = info, allCrime = v1, antiSocialBehavior = v2, burglary = v3,
+            val data = new PoliceCrimeData(id = -1, information = info, allCrime = v1, antiSocialBehavior = v2, burglary = v3,
             criminalDamage = v4, drugs = v5, otherTheft = v6, publicDisorder = v7, robbery = v8, shoplifting = v9,
-            vehicleCrime = v10, violentCrime = v11, otherCrime = v12))
+            vehicleCrime = v10, violentCrime = v11, otherCrime = v12)
+            QUEUE.put( data )
           }
 
           case _ => throw new IllegalArgumentException(("Could not find a matching PoliceArea for force:%s and " +
@@ -179,28 +181,26 @@ trait PoliceCrimeImportToolComponent{
       }
 
       case _ => throw new IllegalArgumentException("Could not extract PoliceCrimeData from line %s".format(line))
-    }
+    }}
 
-    protected def readMany(dir:File, breadcrumb:Seq[String]):Seq[PoliceCrimeData] = {
+    protected def readMany(dir:File, breadcrumb:Seq[String]){
       info("Opening dir %s".format(dir.getAbsolutePath))
-      dir.listFiles().toSeq.flatMap(file => {
+      dir.listFiles().toSeq.foreach(file => {
         val newBreadcrumb = breadcrumb :+ dir.getName
         if (file.isDirectory) readMany(file,newBreadcrumb)
         else if (file.extension==CSV_EXTENSION) readOne(file,newBreadcrumb)
-        else Seq()
       })
     }
 
-    def readMany(): Seq[PoliceCrimeData] = readMany(PATH, Nil)
+    def readMany(){
+      readMany(PATH, Nil)
+    }
 
-    def writeAll(data: Seq[PoliceCrimeData]):Seq[PoliceCrimeData] = policeCrimeDataDao.saveAll(data)
+    def processBatch(items: Seq[PoliceCrimeData]) = policeCrimeDataDao.saveAll(items)
 
-    def execute() {
+    override def execute() {
       if(CLEAR) clear()
-      val data = if(ONE) readOne() else readMany()
-      info("Imported %d PoliceCrimeData".format(data.length))
-      val saved = writeAll(data)
-      info("Wrote %d areas to database".format(saved.length))
+      super.execute()
     }
   }
 

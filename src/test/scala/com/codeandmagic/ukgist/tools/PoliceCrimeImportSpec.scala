@@ -3,11 +3,12 @@ package com.codeandmagic.ukgist.tools
 import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
 import com.codeandmagic.ukgist.dao.{PoliceCrimeDataDao, PoliceCrimeDataDaoComponent, PoliceAreaDao, PoliceAreaDaoComponent}
-import com.codeandmagic.ukgist.model.{Area, Interval, PoliceArea}
+import com.codeandmagic.ukgist.model.{PoliceCrimeData, Area, Interval, PoliceArea}
 import com.codeandmagic.ukgist.model.Area.Source
 import com.codeandmagic.ukgist.model.Interval.FOREVER
 import org.joda.time.DateTime
 import java.io.{InputStream, PrintStream, ByteArrayOutputStream, ByteArrayInputStream}
+import net.liftweb.util.Helpers
 
 /**
  * User: cvrabie
@@ -54,6 +55,7 @@ class PoliceCrimeImportSpec extends Specification with Mockito{
 
   "PoliceCrimeImport.readOne(String)" should{
     "correctly deserialize a correct CSV line" in{
+      val instance = tool(PATH_DIR)
       val maybeCrime = instance.testReadOne(LINE_1)
       maybeCrime must beSome
       val crime = maybeCrime.get
@@ -62,17 +64,22 @@ class PoliceCrimeImportSpec extends Specification with Mockito{
       crime.otherCrime must_==(LINE_1_OTHER)
     }
     "does not choke on the header line" in{
+      val instance = tool(PATH_DIR)
       instance.testReadOne(LINE_H) must beNone
     }
     "throws IllegalArgumentException if the line does not match the format" in{
+      val instance = tool(PATH_DIR)
       instance.testReadOne(LINE_BROKEN) must throwA(manifest[IllegalArgumentException])
     }
   }
 
   "PoliceCrimeImport.readOne()" should{
-    val importer = tool(FLAG_ONE, FLAG_VALID, FLAG_VALID_STR, PATH_CSV)
     "correctly deserialize a correct CSV file" in{
-      val data = importer.readOne()
+      val importer = tool(FLAG_ONE, FLAG_VALID, FLAG_VALID_STR, PATH_CSV)
+      importer.readOne()
+      val d = new java.util.ArrayList[PoliceCrimeData]()
+      importer.QUEUE.drainTo(d)
+      val data = d.toArray(new Array[PoliceCrimeData](0))
       data.length must_==(4)
       val first = data.head
       first.id must_==(-1)
@@ -85,9 +92,12 @@ class PoliceCrimeImportSpec extends Specification with Mockito{
   }
 
   "PoliceCrimeImport.readMany()" should{
-    val importer = tool(FLAG_MANY, PATH_DIR)
     "recursively decode PoliceCrimeData from a folder with CSVs" in{
-      val data = importer.readMany()
+      val importer = tool(FLAG_MANY, PATH_DIR)
+      importer.readMany()
+      val d = new java.util.ArrayList[PoliceCrimeData]()
+      importer.QUEUE.drainTo(d)
+      val data = d.toArray(new Array[PoliceCrimeData](0))
       data.length must_!=(4*3)
       val first = data.head
       first.id must_==(-1)
@@ -126,7 +136,6 @@ object PoliceCrimeImportFixture{
 
   implicit val in:InputStream = new ByteArrayInputStream("y".getBytes)
   def tool(args:String*)(implicit is:InputStream) = new CrimeImportMockRegistry(is,args:_*).policeCrimeImportTool
-  val instance = tool(PATH_DIR)
 }
 
 class CrimeImportMockRegistry(is:InputStream, args:String*) extends Mockito
@@ -145,7 +154,15 @@ class CrimeImportMockRegistry(is:InputStream, args:String*) extends Mockito
       super.apply()
       this
     }
-    def testReadOne(line: String) = super.readOne(line)
+    override val PRODUCER_TASK = new Runnable {
+      def run() {}
+    }
+    override val SLEEP = 500
+    def testReadOne(line: String):Option[PoliceCrimeData] = {
+      super.readOne(None,line)
+      Thread.sleep(1000)
+      Option( QUEUE.poll() )
+    }
   }
 }
 

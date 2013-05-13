@@ -27,6 +27,7 @@ import java.io._
 import com.codeandmagic.ukgist.util.InvalidKmlException
 import com.codeandmagic.ukgist.model.Interval.FOREVER
 import com.codeandmagic.ukgist.dao.{PoliceAreaDaoComponent, PoliceAreaDao}
+import java.util
 
 /**
  * User: cvrabie
@@ -160,7 +161,8 @@ class PoliceKmlImportSpec extends Specification with Mockito{
   "PoliceKmlImport.readOne()" should{
     "correctly decode a PolygonArea from a valid KML" in{
       val t = tool(FLAG_ONE,PATH_KML)
-      val area = t.readOne()
+      t.readOne()
+      val area = t.QUEUE.take()
       area.name must beEqualTo(FILE_KML)
       area.source must beEqualTo(Area.Source.POLICE)
       area must beAPolygonArea(LONDON_1_KML_OUTER,Nil)
@@ -175,7 +177,10 @@ class PoliceKmlImportSpec extends Specification with Mockito{
   "PoliceKmlImport.readMany()" should{
     "recursively decode PolygonAreas from a folder with KMLs" in{
       val t = tool(PATH_DIR)
-      val areas:Seq[PolygonArea] = t.readMany()
+      t.readMany()
+      val as = new util.ArrayList[PoliceArea]()
+      t.QUEUE.drainTo(as)
+      val areas = as.toArray(new Array[PoliceArea](0))
       areas.length must beEqualTo(3)
       val a1 = areas.find(_.name == "kmls-k1")
       a1 must beSome
@@ -224,7 +229,11 @@ class KmlImportMockRegistry(is:InputStream, args:String*) extends Mockito with P
     val OUTPUT = new ByteArrayOutputStream()
     val dao = policeAreaDao
     override val OUT = new PrintStream(OUTPUT)
-    override val IN =  is
+    override val IN = is
+    override val CONSUMER_TASK = new Runnable {
+      def run() {}
+    }
+    override val SLEEP = 500
     override def apply():MockPoliceAreaTool = {
       super.apply()
       this
